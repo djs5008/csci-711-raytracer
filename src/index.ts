@@ -1,18 +1,22 @@
-import { GPU } from "gpu.js";
-import InputManager from "./app/input-manager";
-import Renderer from "./app/renderer";
-import Camera from "./model/camera";
-import Plane from "./model/entities/plane";
-import Sphere from "./model/entities/sphere";
-import Triangle from "./model/entities/triangle";
-import Bounds from "./model/util/bounds";
-import Color from "./model/util/color";
-import Vector3 from "./model/util/vector3";
-import World from "./model/world";
+import '../styles/index.css';
 
-const canvas        = <HTMLCanvasElement> document.getElementById('draw');
-const renderer      = new Renderer(canvas);
-const inputManager  = new InputManager(renderer);
+import { GPU } from 'gpu.js';
+import InputManager from './app/input-manager';
+import Renderer from './app/renderer';
+import Camera from './model/camera';
+import Plane from './model/entities/plane';
+import Sphere from './model/entities/sphere';
+import Triangle from './model/entities/triangle';
+import Bounds from './model/util/bounds';
+import Color from './model/util/color';
+import Vector3 from './model/util/vector3';
+import World from './model/world';
+import SettingsManager from './app/settings-manager';
+
+const canvas          = <HTMLCanvasElement> document.getElementById('draw');
+const renderer        = new Renderer(canvas, new Bounds(150, 100));
+const inputManager    = new InputManager(renderer);
+const settingsManager = new SettingsManager(renderer);
 const gpu = new GPU();
 
 // Create the world

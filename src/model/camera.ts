@@ -117,4 +117,8 @@ export default class Camera extends Entity {
         this.setLookat(this.lookAt.add(new Vector3(x, y, z)).normalize());
     }
 
+    public setViewport(bounds : Bounds) {
+        this.viewport = bounds;
+    }
+
 }

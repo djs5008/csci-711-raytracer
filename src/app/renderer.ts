@@ -1,5 +1,6 @@
 import Camera from "../model/camera";
 import IRenderData from "../model/interfaces/render-data";
+import Bounds from "../model/util/bounds";
 
 export default class Renderer {
 
@@ -10,14 +11,13 @@ export default class Renderer {
     private camera      : Camera;
 
     constructor(
-        private canvas : HTMLCanvasElement,
+        public canvas      : HTMLCanvasElement,
+        public resolution   : Bounds,
     ) {
         this.ctx       = canvas.getContext('2d');
         this.tmpCanvas = this.createTempCanvas(canvas);
         this.tmpCtx    = this.tmpCanvas.getContext('2d');
-        const baseArray = new Uint8ClampedArray([ ...new Array(4 * canvas.width * canvas.height) ]);
-        const { width, height } = this.canvas;
-        this.imageData = new ImageData(baseArray, width, height);
+        this.updateResolution(resolution);
     }
 
     private createTempCanvas(canvas : HTMLCanvasElement) : HTMLCanvasElement {
@@ -51,10 +51,28 @@ export default class Renderer {
 
     public setCamera(camera : Camera) {
         this.camera = camera;
+        this.camera.setViewport(this.resolution);
     }
 
     public getCamera() : Camera {
         return this.camera;
+    }
+
+    public updateResolution(bounds : Bounds) {
+        const canvas    = this.canvas;
+        const tmpCanvas = this.tmpCanvas;
+        canvas.width    = bounds.w;
+        canvas.height   = bounds.h;
+        tmpCanvas.width  = bounds.w;
+        tmpCanvas.height = bounds.h;
+        this.imageData = new ImageData(
+            new Uint8ClampedArray([ ...new Array(4 * bounds.w * bounds.h) ]),
+            bounds.w,
+            bounds.h
+        );
+        if (this.camera) {
+            this.camera.setViewport(bounds);
+        }
     }
  
 }
