@@ -1,15 +1,13 @@
-# 🚀 Welcome to your new awesome project!
+# 🚀 Dan & Kyle's Awesome Raytracer!!!
 
-This project has been created using **webpack scaffold**, you can now run
+### How To Build
 
 ```
 npm run build
 ```
 
-or
+### How to Run
 
 ```
-yarn build
+npm run dev
 ```
-
-to bundle your application
