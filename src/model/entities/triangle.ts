@@ -21,47 +21,32 @@ export default class Triangle extends PhysicalEntity {
         const vertex0 : Vector3 = this.vertices[0];
         const vertex1 : Vector3 = this.vertices[1];
         const vertex2 : Vector3 = this.vertices[2];
-        let edge1 : Vector3 = new Vector3();
-        let edge2 : Vector3 = new Vector3();
-        let h : Vector3 = new Vector3();
-        let s : Vector3 = new Vector3();
-        let q : Vector3 = new Vector3();
 
-        let a, f, u, v;
+        const edge1 : Vector3 = vertex1.sub(vertex0);
+        const edge2 : Vector3 = vertex2.sub(vertex0);
 
-        edge1 = vertex1.sub(vertex0);
-        edge2 = vertex2.sub(vertex0);
+        const h : Vector3 = ray.direction.cross(edge2);
+        const a : number  = edge1.dot(h);
+        if (a > -Triangle.EPSILON && a < Triangle.EPSILON) return null;
 
-        h = ray.direction.cross(edge2);
-        a = edge1.dot(h);
-        if (a > -Triangle.EPSILON && a < Triangle.EPSILON) {
-            return null;    // This ray is parallel to this triangle.
-        }
-        f = 1.0 / a;
-        s = ray.origin.sub(vertex0);
-        u = f * (s.dot(h));
-        if (u < 0.0 || u > 1.0) {
-            return null;
-        }
-        q = s.cross(edge1);
-        v = f * ray.direction.dot(q);
-        if (v < 0.0 || u + v > 1.0) {
-            return null;
-        }
-        // At this stage we can compute t to find out where the intersection point is on the line.
-        const t = f * edge2.dot(q);
-        if (t > Triangle.EPSILON) // ray intersection
-        {
-            // outIntersectionPoint.set(0.0, 0.0, 0.0);
-            // outIntersectionPoint.scaleAdd(t, rayVector, rayOrigin);
+        const f : number  = 1.0 / a;
+        const s : Vector3 = ray.origin.sub(vertex0);
+        const u : number  = f * (s.dot(h));
+        if (u < 0 || u > 1) return null;
+
+        const q : Vector3 = s.cross(edge1);
+        const v : number  = f * ray.direction.dot(q);
+        if (v < 0 || u + v > 1) return null;
+
+        const t : number = f * edge2.dot(q);
+        if (t > 0) {
             return {
                 w: t,
                 entity: this,
             };
-        } else // This means that there is a line intersection but not a ray intersection.
-        {
-            return null;
         }
+
+        return null;
     }
 
 }

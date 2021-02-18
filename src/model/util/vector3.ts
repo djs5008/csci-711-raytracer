@@ -10,9 +10,7 @@ export default class Vector3 {
         public z : number = 0,
     ) { }
 
-    static asVec3(vector : Vector3) : vec3 { return [vector.x, vector.y, vector.z ]; }
-
-    static fromVec3(vector : vec3) : Vector3 { return new Vector3(vector[0], vector[1], vector[2]); }
+    static asVec3(vector : Vector3) : vec3 { return [ vector.x, vector.y, vector.z ]; }
 
     public add(vector : Vector3) : Vector3 {
         let result : vec3 = Vector3.asVec3(this);

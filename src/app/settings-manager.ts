@@ -15,12 +15,12 @@ export default class SettingsManager {
     }
 
     private handleWidthChange() {
-        this.heightInput.value = (Math.floor(parseInt(this.widthInput.value) * (2/3))).toString();
+        this.heightInput.value = (Math.floor(parseInt(this.widthInput.value) * (9/16))).toString();
         this.updateCanvas();
     }
     
     private handleHeightChange() {
-        this.widthInput.value = (Math.floor(parseInt(this.heightInput.value) * (3/2))).toString();
+        this.widthInput.value = (Math.floor(parseInt(this.heightInput.value) * (16/9))).toString();
         this.updateCanvas();
     }
 

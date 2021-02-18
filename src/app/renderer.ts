@@ -4,6 +4,8 @@ import Bounds from "../model/util/bounds";
 
 export default class Renderer {
 
+    public static readonly DEFAULT_RESOLUTION = new Bounds(192, 108);
+
     private ctx         : CanvasRenderingContext2D;
     private tmpCanvas   : HTMLCanvasElement;
     private tmpCtx      : CanvasRenderingContext2D;
@@ -11,8 +13,8 @@ export default class Renderer {
     private camera      : Camera;
 
     constructor(
-        public canvas      : HTMLCanvasElement,
-        public resolution   : Bounds,
+        public canvas     : HTMLCanvasElement,
+        public resolution : Bounds = Renderer.DEFAULT_RESOLUTION,
     ) {
         this.ctx       = canvas.getContext('2d');
         this.tmpCanvas = this.createTempCanvas(canvas);
@@ -27,23 +29,27 @@ export default class Renderer {
         return tmpCanvas;
     }
 
-    public drawImage() {
+    public async drawImage() {
         if (!this.camera) return;
-        const data = this.camera.render();
-        // console.time('FRAME DRAW');
+        console.time('FRAME DRAW');
+        const data = await this.camera.render();
         this.drawPixelData(data);
         // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.drawImage(this.tmpCanvas, 0, 0);
-        // console.timeEnd('FRAME DRAW');
+        console.timeEnd('FRAME DRAW');
     }
 
     private drawPixelData(data : IRenderData) {
         const pixelLength = data.pixels.length * 4;
         for (let i = 0; i < pixelLength;) {
             const pix = data.pixels[i/4];
-            this.imageData.data[i++] = Math.floor(pix.r*255);
-            this.imageData.data[i++] = Math.floor(pix.g*255);
-            this.imageData.data[i++] = Math.floor(pix.b*255);
+            if (!pix) {
+                i+=4;
+                continue;
+            };
+            this.imageData.data[i++] = Math.floor(pix.scale(255).x);
+            this.imageData.data[i++] = Math.floor(pix.scale(255).y);
+            this.imageData.data[i++] = Math.floor(pix.scale(255).z);
             this.imageData.data[i++] = 255;
         }
         this.tmpCtx.putImageData(this.imageData, 0, 0);

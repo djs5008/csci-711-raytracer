@@ -17,28 +17,22 @@ export default class Plane extends PhysicalEntity {
 
     intersect(ray : Ray) : IXResult {
         const denom = this.normal.dot(ray.direction); 
-        if (denom > 0) {
-            const p0l0 : Vector3 = new Vector3(0, 0, 0).sub(ray.origin); 
-            const t = p0l0.dot(this.normal) / denom;
-            if (t >= 0) {
-                const { n, u, v } = ray.camera.viewportProperties;
-                const cam2world : mat4 = [
-                    u.x, v.x, n.x, 0,
-                    u.y, v.y, n.y, 0,
-                    u.z, v.z, n.z, 0,
-                    -ray.origin.dot(u), -ray.origin.dot(v), -ray.origin.dot(n), 1
-                ];
-                const point = ray.origin.transform(cam2world).add(ray.direction.scale(t)).add(ray.origin).scale(10);
-                if (t <= 25) {
-                    if (Math.round(point.x) % 15 === 0 || Math.round(point.z) % 15 === 0) {
-                        return {
-                            w: t,
-                            entity: this,
-                        };
-                    }
-                }
-            }
+        if (denom <= 0) return null;
+
+        const p0l0 : Vector3 = ray.origin.scale(-1); 
+        const t = p0l0.dot(this.normal) / denom;
+        if (t < 0 || t > 25) return null;
+
+        const { cam2world } = ray.cameraProps;
+        const point = ray.origin.transform(cam2world).add(ray.direction.scale(t)).add(ray.origin).scale(10);
+
+        if (Math.round(point.x) % 15 === 0 || Math.round(point.z) % 15 === 0) {
+            return {
+                w: t,
+                entity: this,
+            };
         }
+
         return null;
     }
 

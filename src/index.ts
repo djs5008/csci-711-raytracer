@@ -14,7 +14,7 @@ import World from './model/world';
 import SettingsManager from './app/settings-manager';
 
 const canvas          = <HTMLCanvasElement> document.getElementById('draw');
-const renderer        = new Renderer(canvas, new Bounds(150, 100));
+const renderer        = new Renderer(canvas);
 const inputManager    = new InputManager(renderer);
 const settingsManager = new SettingsManager(renderer);
 const gpu = new GPU();

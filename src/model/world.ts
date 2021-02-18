@@ -14,11 +14,20 @@ export default class World {
     }
 
     public getPhysicalEntities() : Array<PhysicalEntity> {
-        return this.getEntities().filter((entity) : entity is PhysicalEntity => entity instanceof PhysicalEntity);
+        const result = [];
+        const entities = this.getEntities();
+        const totalEntities = entities.length;
+        for (let i = 0; i < totalEntities; i++) {
+            const entity = entities[i];
+            if (entity instanceof PhysicalEntity) {
+                result.push(entity);
+            }
+        }
+        return result;
     }
 
     public getEntities() : Array<Entity> {
-        return [ ...this.entities ];
+        return this.entities;
     }
 
     public transform(entity : Entity) {

@@ -1,4 +1,4 @@
-import { glMatrix } from "gl-matrix";
+import { glMatrix, mat4 } from "gl-matrix";
 import Entity from "./entity";
 import IRenderData from "./interfaces/render-data";
 import Bounds from "./util/bounds";
@@ -12,18 +12,22 @@ interface IViewportProperties {
     u                        : Vector3;
     v                        : Vector3;
     aspectRatio              : number;
-    scale                    : number;
+    fovScale                    : number;
+    cam2world                : mat4;
 }
 
-export default class Camera extends Entity {
+class Camera extends Entity {
 
     // public static BG_COLOR = new Color(1, 0, 1);
     public static BG_COLOR = new Color(0.251, 0.59, 1);
     public viewportProperties : IViewportProperties;
 
+    private aspectRatio : number;
+    private fovScale    : number;
+
     constructor(
         private world    : World,
-        private viewport : Bounds,
+        public  viewport : Bounds,
                 position : Vector3,
         private lookAt   : Vector3,
         private up       : Vector3 = Vector3.UP,
@@ -41,50 +45,65 @@ export default class Camera extends Entity {
         const n = this.lookAt.normalize();
         const u = n.cross(this.up).normalize();
         const v = u.cross(n).normalize();
-        const aspectRatio = this.viewport.h / this.viewport.w;
-        const scale = Math.tan(glMatrix.toRadian(this.fov * 0.5));
+        const aspectRatio = (this.aspectRatio) ?? this.viewport.h / this.viewport.w;
+        const fovScale = (this.fovScale) ?? Math.tan(glMatrix.toRadian(this.fov * 0.5));
+        if (!this.aspectRatio) this.aspectRatio = aspectRatio;
+        if (!this.fovScale) this.fovScale = fovScale;
+        const cam2world : mat4 = [
+            u.x, v.x, n.x, 0,
+            u.y, v.y, n.y, 0,
+            u.z, v.z, n.z, 0,
+            -eyepoint.dot(u), -eyepoint.dot(v), -eyepoint.dot(n), 1
+        ];
         this.viewportProperties = {
             n,
             u,
             v,
             aspectRatio,
-            scale,
+            fovScale,
+            cam2world,
         };
     }
 
     public render() : IRenderData {
-        // console.time('RENDER TIME');
         this.setupViewportProperties();
 
         const pixels = [];
         const { w, h } = this.viewport;
-        const { aspectRatio, scale, n, u, v } = this.viewportProperties;
+        const { aspectRatio, fovScale, n, u, v } = this.viewportProperties;
 
+        const physicalEntities = this.world.getPhysicalEntities();
+        const position = this.getPosition();
+        const yScale = fovScale * aspectRatio;
+        const invFocalLen = 1 / this.focalLen;
+
+        let p = 0;
         for (let y = 0; y < h; y++) {
             for (let x = 0; x < w; x++) {
-
                 const pX = 1 - (x / w) - 0.5;
                 const pY = 1 - (y / h) - 0.5;
-                const uScaled = u.scale(pX * scale);
-                const vScaled = v.scale(pY * scale * aspectRatio);
-                const imgPoint = this.getPosition().add(uScaled).add(vScaled).add(n.scale(1 / this.focalLen));
-                const rayDir = imgPoint.sub(this.getPosition()).normalize();
-                const ray = new Ray(this.getPosition(), rayDir, this);
+                const uScaled = u.scale(pX * fovScale);
+                const vScaled = v.scale(pY * yScale);
+                const imgPoint = position.add(uScaled).add(vScaled).add(n.scale(invFocalLen));
+                const rayDir = imgPoint.sub(position).normalize();
+                const ray = new Ray(position, rayDir, this.viewportProperties);
 
                 let minResult;
-                for (let entity of this.world.getPhysicalEntities()) {
+                for (let entity of physicalEntities) {
                     const ixResult = entity.intersect(ray);
                     if (ixResult != null && (minResult == null || ixResult.w < minResult.w)) {
                         minResult = ixResult;
                     }
                 }
 
-                // pixels.push((minResult != null) ? Color.asColor(minResult.entity.getMaterial().scale(10/minResult.w)) : BG_COLOR);
-                pixels.push((minResult != null) ? Color.asColor(minResult.entity.getMaterial()) : Camera.BG_COLOR);
+                if (minResult == null) {
+                    pixels[p++] = Camera.BG_COLOR;
+                } else {
+                    pixels[p++] = Color.asColor(minResult.entity.getMaterial());
+                }
             }
         }
 
-        // console.timeEnd('RENDER TIME');
         return {
             pixels,
         };
@@ -99,10 +118,11 @@ export default class Camera extends Entity {
     }
 
     public move(movement : Vector3) {
+        const cameraPos = this.getPosition();
         super.setPosition(new Vector3(
-            this.getPosition().x + movement.x,
-            this.getPosition().y + movement.y,
-            this.getPosition().z + movement.z,
+            cameraPos.x + movement.x,
+            cameraPos.y + movement.y,
+            cameraPos.z + movement.z,
         ));
     }
 
@@ -122,3 +142,6 @@ export default class Camera extends Entity {
     }
 
 }
+
+export default Camera;
+export type { IViewportProperties };
