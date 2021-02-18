@@ -18,12 +18,11 @@ export default class Sphere extends PhysicalEntity {
     public intersect(ray : Ray) : IXResult {
 
         const r = this.radius;
-        let eyeToCenter, v, eoDot;
-        eyeToCenter = vec3.sub([0,0,0], this.getPosition(), ray.origin);
-        v = vec3.dot(eyeToCenter, ray.direction);
+        const eyeToCenter = vec3.sub([0,0,0], this.getPosition(), ray.origin);
+        const v = vec3.dot(eyeToCenter, ray.direction);
         if (v < 0) return null;
 
-        eoDot = vec3.dot(eyeToCenter, eyeToCenter);
+        const eoDot = vec3.dot(eyeToCenter, eyeToCenter);
         const discriminant = ((r * r) - eoDot) + (v * v);
 
         if (discriminant < 0) return null;
