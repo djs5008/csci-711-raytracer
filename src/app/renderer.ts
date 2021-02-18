@@ -47,9 +47,9 @@ export default class Renderer {
                 i+=4;
                 continue;
             };
-            this.imageData.data[i++] = Math.floor(pix.scale(255).x);
-            this.imageData.data[i++] = Math.floor(pix.scale(255).y);
-            this.imageData.data[i++] = Math.floor(pix.scale(255).z);
+            this.imageData.data[i++] = Math.floor(pix.r * 255);
+            this.imageData.data[i++] = Math.floor(pix.g * 255);
+            this.imageData.data[i++] = Math.floor(pix.b * 255);
             this.imageData.data[i++] = 255;
         }
         this.tmpCtx.putImageData(this.imageData, 0, 0);

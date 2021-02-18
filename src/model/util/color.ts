@@ -1,17 +1,15 @@
-import Vector3 from "./vector3";
+import { vec3 } from "gl-matrix";
 
-export default class Color extends Vector3 {
+export default class Color {
 
     constructor(
         public r : number,
         public g : number,
         public b : number
-    ) {
-        super(r, g, b);
-    }
+    ) {}
 
-    static asColor(vector : Vector3) : Color {
-        return new Color(vector.x, vector.y, vector.z);
+    static asColor(vector : vec3) : Color {
+        return new Color(vector[0], vector[1], vector[2]);
     }
 
 }

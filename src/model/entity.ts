@@ -1,7 +1,7 @@
+import { vec3 } from "gl-matrix";
 import IXResult from "./interfaces/intersection-result";
 import Color from "./util/color";
 import Ray from "./util/ray";
-import Vector3 from "./util/vector3";
 
 interface Entity {
     intersect?(ray : Ray) : IXResult;
@@ -10,15 +10,15 @@ interface Entity {
 abstract class Entity {
 
     constructor(
-        private position : Vector3,
+        private position : vec3,
         private material : Color = new Color(255, 255, 255),
     ) { }
 
-    public setPosition(position : Vector3) : void {
+    public setPosition(position : vec3) : void {
         this.position = position;
     }
 
-    public getPosition() : Vector3 {
+    public getPosition() : vec3 {
         return this.position;
     }
 
@@ -26,8 +26,8 @@ abstract class Entity {
         this.material = material;
     }
 
-    public getMaterial() : Color {
-        return this.material;
+    public getMaterial() : vec3 {
+        return [ this.material.r, this.material.g, this.material.b ];
     }
 
     // public addPolygons(...polygons : Array<Polygon>) {

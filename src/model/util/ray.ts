@@ -1,11 +1,11 @@
-import Vector3 from "./vector3";
 import { IViewportProperties } from "../camera";
+import { vec3 } from "gl-matrix";
 
 export default class Ray {
 
     constructor(
-        public origin      : Vector3,
-        public direction   : Vector3,
+        public origin      : vec3,
+        public direction   : vec3,
         public cameraProps : IViewportProperties,
     ) { }
 

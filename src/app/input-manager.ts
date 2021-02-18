@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import Renderer from "./renderer";
 
 export default class InputManager {
@@ -51,7 +52,7 @@ export default class InputManager {
 
                 // right*(movementX,0,0) + forward*(0,0,movementZ)
                 
-                camera.move(u.scale(dirX*scale).add(v.scale(dirY*scale)));
+                camera.move(vec3.add([0,0,0], vec3.scale([0,0,0], u, dirX*scale), vec3.scale([0,0,0], v, dirY*scale)));
                 this.redraw(true);
             }
         });
@@ -66,7 +67,7 @@ export default class InputManager {
 
             const camera = this.renderer.getCamera();
             const n = camera.viewportProperties.n;
-            camera.move(n.scale(dZ*scale));
+            camera.move(vec3.scale([0,0,0], n, dZ*scale));
             this.redraw();
         });
     }
