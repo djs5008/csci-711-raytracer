@@ -1,129 +1,108 @@
 import { glMatrix, mat4, vec3 } from "gl-matrix";
+import { IKernelRunShortcut, KernelOutput } from "gpu.js";
 import Entity from "./entity";
 import IRenderData from "./interfaces/render-data";
 import Bounds from "./util/bounds";
-import Color from "./util/color";
-import Ray from "./util/ray";
+import { addVec3, crossVec3, dotVec3, normalizeVec3, Vector3 } from "./util/vector3";
 import World from "./world";
 
-interface IViewportProperties {
-    n                        : vec3;
-    u                        : vec3;
-    v                        : vec3;
-    aspectRatio              : number;
-    fovScale                    : number;
-    cam2world                : mat4;
+interface ISceneProperties {
+    viewport    : number[];
+    eyepoint    : number[];
+    entities    : number[][];
+    N           : number[];
+    U           : number[];
+    V           : number[];
+    aspectRatio : number;
+    fovScale    : number;
+    focalLen    : number;
+    cam2world   : number[];
 }
 
 class Camera extends Entity {
 
-    // public static BG_COLOR = new Color(1, 0, 1);
-    public static BG_COLOR : vec3 = [0.251, 0.59, 1];
-    public viewportProperties : IViewportProperties;
+    public static BG_COLOR    : number[] = [0.251, 0.59, 1];
+    public viewportProperties : ISceneProperties;
 
     private aspectRatio : number;
     private fovScale    : number;
 
+    private gpuKernel   : IKernelRunShortcut;
+
     constructor(
         private world    : World,
         public  viewport : Bounds,
-                position : vec3,
-        private lookAt   : vec3,
-        private up       : vec3 = [ 0, 1, 0 ],
+                position : number[],
+        private lookAt   : number[],
+        private up       : number[] = [ 0, 1, 0 ],
         private fov      : number = 90,
         private focalLen : number = 1,
         private yaw      : number = 90,
         private pitch    : number = 0,
     ) {
-        super(position);
+        super(null, position);
+        this.yaw    = 0;
+        this.pitch  = 0;
         this.lookAt = [ 0, 0, 1 ];
+        this.rotate(yaw, pitch);
     }
 
     private setupViewportProperties() : void {
-        const eyepoint = this.getPosition();
-        const n = vec3.normalize([0,0,0], this.lookAt);
-        const u = vec3.normalize([0,0,0], vec3.cross([0,0,0], n, this.up));
-        const v = vec3.normalize([0,0,0], vec3.cross([0,0,0], u, n));
+        const eyepoint = this.position;
+        const entities = this.world.getPhysicalEntities();
+        const N = normalizeVec3(this.lookAt);
+        const U = normalizeVec3(crossVec3(N, Vector3.UP));
+        const V = normalizeVec3(crossVec3(U, N));
         const aspectRatio = (this.aspectRatio) ?? this.viewport.h / this.viewport.w;
         const fovScale = (this.fovScale) ?? Math.tan(glMatrix.toRadian(this.fov * 0.5));
+        const focalLen = this.focalLen;
         if (!this.aspectRatio) this.aspectRatio = aspectRatio;
         if (!this.fovScale) this.fovScale = fovScale;
         const cam2world : mat4 = [
-            u[0], v[0], n[0], 0,
-            u[1], v[1], n[1], 0,
-            u[2], v[2], n[2], 0,
-            -vec3.dot(eyepoint, u), -vec3.dot(eyepoint, v), -vec3.dot(eyepoint, n), 1
+            U[0], V[0], N[0], 0,
+            U[1], V[1], N[1], 0,
+            U[2], V[2], N[2], 0,
+            -dotVec3(eyepoint, U), -dotVec3(eyepoint, V), -dotVec3(eyepoint, N), 1
         ];
         this.viewportProperties = {
-            n,
-            u,
-            v,
+            viewport: [ this.viewport.w, this.viewport.h ],
+            eyepoint,
+            entities,
+            N,
+            U,
+            V,
             aspectRatio,
             fovScale,
+            focalLen,
             cam2world,
         };
     }
 
-    public render() : IRenderData {
+    public render() : void {
         this.setupViewportProperties();
 
-        const pixels : Array<Color> = [];
-        const { w, h } = this.viewport;
-        const { aspectRatio, fovScale, n, u, v } = this.viewportProperties;
-
-        const physicalEntities = this.world.getPhysicalEntities();
-        const position = this.getPosition();
-        const yScale = fovScale * aspectRatio;
-        const invFocalLen = 1 / this.focalLen;
-
-        let p = 0;
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                const pX = 1 - (x / w) - 0.5;
-                const pY = 1 - (y / h) - 0.5;
-                let uScaled, vScaled, imgPoint, rayDir;
-                uScaled = vec3.scale([0,0,0], u, pX * fovScale);
-                vScaled = vec3.scale([0,0,0], v, pY * yScale);
-                imgPoint = vec3.scale([0,0,0], vec3.add([0,0,0], vec3.add([0,0,0], vec3.add([0,0,0], position, uScaled), vScaled), n), invFocalLen);
-                rayDir = vec3.normalize([0,0,0], vec3.sub([0,0,0], imgPoint, position));
-                const ray = new Ray(position, rayDir, this.viewportProperties);
-
-                let minResult;
-                for (let entity of physicalEntities) {
-                    const ixResult = entity.intersect(ray);
-                    if (ixResult != null && (minResult == null || ixResult.w < minResult.w)) {
-                        minResult = ixResult;
-                    }
-                }
-
-                if (minResult == null) {
-                    pixels[p++] = Color.asColor(Camera.BG_COLOR);
-                } else {
-                    pixels[p++] = Color.asColor(minResult.entity.getMaterial());
-                }
-            }
-        }
-
-        return {
-            pixels,
-        };
+        const { viewport, eyepoint, entities, N, U, V, aspectRatio, fovScale, focalLen, cam2world } = this.viewportProperties;
+        const output : KernelOutput = this.gpuKernel(
+            viewport,
+            eyepoint,
+            entities,
+            N,
+            U,
+            V,
+            aspectRatio,
+            fovScale,
+            focalLen,
+            cam2world
+        );
     }
 
-    public getLookat() : vec3 {
-        return this.lookAt;
-    }
-
-    public setLookat(vector : vec3) {
-        this.lookAt = vector;
-    }
-
-    public move(movement : vec3) {
-        const cameraPos = this.getPosition();
-        super.setPosition([
+    public move(movement : number[]) {
+        const cameraPos = this.position;
+        super.position = [
             cameraPos[0] + movement[0],
             cameraPos[1] + movement[1],
             cameraPos[2] + movement[2],
-        ]);
+        ];
     }
 
     public rotate(yaw : number, pitch : number) {
@@ -134,14 +113,18 @@ class Camera extends Entity {
         const x = Math.cos(yawR) * Math.cos(pitchR);
         const y = Math.sin(pitchR);
         const z = Math.sin(yawR) * Math.cos(pitchR);
-        this.setLookat(vec3.normalize([0,0,0], vec3.add([0,0,0], this.lookAt, [ x, y, z ])));
+        this.lookAt = normalizeVec3(addVec3(this.lookAt, [ x, y, z ]));
     }
 
     public setViewport(bounds : Bounds) {
         this.viewport = bounds;
     }
 
+    public setKernel(kernel : IKernelRunShortcut) {
+        this.gpuKernel = kernel;
+    }
+
 }
 
 export default Camera;
-export type { IViewportProperties };
+export type { ISceneProperties };

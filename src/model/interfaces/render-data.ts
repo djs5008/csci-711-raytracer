@@ -1,5 +1,4 @@
-import Color from "../util/color";
-
+import { vec3 } from "gl-matrix";
 export default interface IRenderData {
-    pixels : Array<Color>;
+    pixels : Array<vec3>;
 }

@@ -1,36 +1,45 @@
-import { vec3 } from "gl-matrix";
-import IXResult from "../interfaces/intersection-result";
+import { EntityType } from "../entity";
 import PhysicalEntity from "../interfaces/physical-entity";
-import Color from "../util/color";
-import Ray from "../util/ray";
+import { dot } from "../util/vector3";
 
 export default class Sphere extends PhysicalEntity {
 
     constructor(
-               center    : vec3,
+               center    : number[],
         public radius    : number,
-               material? : Color,
+               material? : number[],
     ) {
-        super(center);
-        this.setMaterial(material);
+        super(EntityType.SPHERE, center, material);
     }
 
-    public intersect(ray : Ray) : IXResult {
-
-        const r = this.radius;
-        const eyeToCenter = vec3.sub([0,0,0], this.getPosition(), ray.origin);
-        const v = vec3.dot(eyeToCenter, ray.direction);
-        if (v < 0) return null;
-
-        const eoDot = vec3.dot(eyeToCenter, eyeToCenter);
-        const discriminant = ((r * r) - eoDot) + (v * v);
-
-        if (discriminant < 0) return null;
-        
-        return {
-            w: v - Math.sqrt(discriminant),
-            entity: this,
-        };
+    public getPhysicalProperties() : number[] {
+        return [
+            this.radius,
+        ];
     }
     
+}
+
+export function sphereIntersect(
+        centerX: number,
+        centerY: number,
+        centerZ: number,
+        radius: number,
+        rayPosX: number,
+        rayPosY: number,
+        rayPosZ: number,
+        rayDirX: number,
+        rayDirY: number,
+        rayDirZ: number) : number {
+    const eyeToCenterX = centerX - rayPosX;
+    const eyeToCenterY = centerY - rayPosY;
+    const eyeToCenterZ = centerZ - rayPosZ;
+    const sideLength = dot(eyeToCenterX, eyeToCenterY, eyeToCenterZ, rayDirX, rayDirY, rayDirZ);
+    const cameraToCenterLength = dot(eyeToCenterX, eyeToCenterY, eyeToCenterZ, eyeToCenterX, eyeToCenterY, eyeToCenterZ);
+    const discriminant = (radius * radius) - cameraToCenterLength + (sideLength * sideLength);
+    if (discriminant < 0) {
+        return -1;
+    } else {
+        return sideLength - Math.sqrt(discriminant);
+    }
 }

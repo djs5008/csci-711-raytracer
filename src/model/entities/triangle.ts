@@ -1,52 +1,98 @@
-import { vec3 } from "gl-matrix";
+import { EntityType } from "../entity";
 import IXResult from "../interfaces/intersection-result";
 import PhysicalEntity from "../interfaces/physical-entity";
-import Color from "../util/color";
 import Ray from "../util/ray";
+import { crossX, crossY, crossZ, dot, subX, subY, subZ } from "../util/vector3";
 
 export default class Triangle extends PhysicalEntity {
 
     private static EPSILON = 0.0000001;
 
     constructor(
-        public vertices : Array<vec3>,
-        public normal   : vec3,
-        material? : Color,
+        public vertices : number[][],
+        public normal   : number[],
+        material?       : number[],
     ) {
-        super(null);
-        this.setMaterial(material);
+        super(EntityType.TRIANGLE, null, material);
     }
 
-    public intersect(ray : Ray) : IXResult {
-        const vertex0 : vec3 = this.vertices[0];
-        const vertex1 : vec3 = this.vertices[1];
-        const vertex2 : vec3 = this.vertices[2];
+    public static intersect(triangle : Triangle, ray : Ray) : IXResult {
 
-        const edge1 : vec3 = vec3.sub([0,0,0], vertex1, vertex0);
-        const edge2 : vec3 = vec3.sub([0,0,0], vertex2, vertex0);
-
-        const h : vec3 = vec3.cross([0,0,0], ray.direction, edge2);
-        const a : number  = vec3.dot(edge1, h);
-        if (a > -Triangle.EPSILON && a < Triangle.EPSILON) return null;
-
-        const f : number  = 1.0 / a;
-        const s : vec3 = vec3.sub([0,0,0], ray.origin, vertex0);
-        const u : number  = f * (vec3.dot(s, h));
-        if (u < 0 || u > 1) return null;
-
-        const q : vec3 = vec3.cross([0,0,0], s, edge1);
-        const v : number  = f * vec3.dot(ray.direction, q);
-        if (v < 0 || u + v > 1) return null;
-
-        const t : number = f * vec3.dot(edge2, q);
-        if (t > 0) {
-            return {
-                w: t,
-                entity: this,
-            };
-        }
 
         return null;
     }
 
+    getPhysicalProperties() : number[] {
+        let vertices = [];
+        for (let vertex of this.vertices) {
+            vertices.push(...vertex);
+        }
+        return [
+            ...vertices,
+        ];
+    }
+
+}
+
+export function triangleIntersect(
+    vertex0x : number,
+    vertex0y : number,
+    vertex0z : number,
+    vertex1x : number,
+    vertex1y : number,
+    vertex1z : number,
+    vertex2x : number,
+    vertex2y : number,
+    vertex2z : number,
+    rayPosX  : number,
+    rayPosY  : number,
+    rayPosZ  : number,
+    rayDirX  : number,
+    rayDirY  : number,
+    rayDirZ  : number,
+) {
+    const EPSILON = 0.0000001;
+
+    const edge1 = [
+        subX(vertex1x, vertex1y, vertex1z, vertex0x, vertex0y, vertex0z),
+        subY(vertex1x, vertex1y, vertex1z, vertex0x, vertex0y, vertex0z),
+        subZ(vertex1x, vertex1y, vertex1z, vertex0x, vertex0y, vertex0z),
+    ];
+
+    const edge2 = [
+        subX(vertex2x, vertex2y, vertex2z, vertex0x, vertex0y, vertex0z),
+        subY(vertex2x, vertex2y, vertex2z, vertex0x, vertex0y, vertex0z),
+        subZ(vertex2x, vertex2y, vertex2z, vertex0x, vertex0y, vertex0z),
+    ];
+
+    const h = [
+        crossX(rayDirX, rayDirY, rayDirZ, edge2[0], edge2[1], edge2[2]),
+        crossY(rayDirX, rayDirY, rayDirZ, edge2[0], edge2[1], edge2[2]),
+        crossZ(rayDirX, rayDirY, rayDirZ, edge2[0], edge2[1], edge2[2]),
+    ];
+
+    const a : number = dot(edge1[0], edge1[1], edge1[2], h[0], h[1], h[2]);
+    if (a > -EPSILON && a < EPSILON) return -1;
+
+    const s = [
+        subX(rayPosX, rayPosY, rayPosZ, vertex0x, vertex0y, vertex0z),
+        subY(rayPosX, rayPosY, rayPosZ, vertex0x, vertex0y, vertex0z),
+        subZ(rayPosX, rayPosY, rayPosZ, vertex0x, vertex0y, vertex0z),
+    ];
+    const f : number = 1.0 / a;
+    const u : number = f * (dot(s[0], s[1], s[2], h[0], h[1], h[2]));
+    if (u < 0 || u > 1) return -1;
+
+    const q = [
+        crossX(s[0], s[1], s[2], edge1[0], edge1[1], edge1[2]),
+        crossY(s[0], s[1], s[2], edge1[0], edge1[1], edge1[2]),
+        crossZ(s[0], s[1], s[2], edge1[0], edge1[1], edge1[2]),
+    ];
+    const v : number = f * dot(rayDirX, rayDirY, rayDirZ, q[0], q[1], q[2]);
+    if (v < 0 || u + v > 1) return -1;
+
+    const t : number = f * dot(edge2[0], edge2[1], edge2[2], q[0], q[1], q[2]);
+    if (t < 0) return -1;
+    
+    return t;
 }

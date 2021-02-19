@@ -1,9 +1,7 @@
 import Entity from "../entity";
-import Ray from "../util/ray";
-import IXResult from "./intersection-result";
 
 interface PhysicalEntity {
-    intersect(ray : Ray) : IXResult;
+    getPhysicalProperties() : number[]
 }
 
 class PhysicalEntity extends Entity {}

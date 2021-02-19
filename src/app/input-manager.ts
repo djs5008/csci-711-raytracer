@@ -1,28 +1,18 @@
-import { vec3 } from "gl-matrix";
+import { addVec3, scaleVec3 } from "../model/util/vector3";
 import Renderer from "./renderer";
 
 export default class InputManager {
 
+    private renderer : Renderer;
     private keyToggles  : any       = {};
     private inputDebouncer : number;
-    
-    constructor(
-        private renderer : Renderer
-    ) {
-        this.startLookLoop();
-        this.startMovementLoop();
-        this.startScrollLoop();
-
-        const canvas = document.getElementById('draw');
-        canvas.addEventListener('click', () => canvas.requestPointerLock());
-    }
 
     private startLookLoop() {
         window.addEventListener('mousemove', (evt : MouseEvent) => {
             if (!this.hasPointerLock()) return;
             const camera = this.renderer.getCamera();
-            const dX = -evt.movementX * 0.1;
-            const dY = -evt.movementY * 0.1;
+            const dX = -evt.movementX * 0.07;
+            const dY = -evt.movementY * 0.07;
             camera.rotate(dX, dY);
             this.redraw();
         });
@@ -33,7 +23,7 @@ export default class InputManager {
         window.addEventListener('keyup', (evt) => delete this.keyToggles[evt.key] );
         window.setInterval(() => {
             if (!this.hasPointerLock()) return;
-            const scale = 0.2;
+            const scale = 0.05;
             let dirX = 0;
             let dirY = 0;
             if (this.keyToggles['w']) {
@@ -47,12 +37,9 @@ export default class InputManager {
             }
             if (dirX !== 0 || dirY !== 0) {
                 const camera = this.renderer.getCamera();
-                const u = camera.viewportProperties.u; // Right (relative)
-                const v = camera.viewportProperties.v; // Up (relative)
-
+                const { U, V } = camera.viewportProperties;
                 // right*(movementX,0,0) + forward*(0,0,movementZ)
-                
-                camera.move(vec3.add([0,0,0], vec3.scale([0,0,0], u, dirX*scale), vec3.scale([0,0,0], v, dirY*scale)));
+                camera.move(addVec3(scaleVec3(U, dirX*scale), scaleVec3(V, dirY*scale)));
                 this.redraw(true);
             }
         });
@@ -66,8 +53,8 @@ export default class InputManager {
             const scale     = -0.01;
 
             const camera = this.renderer.getCamera();
-            const n = camera.viewportProperties.n;
-            camera.move(vec3.scale([0,0,0], n, dZ*scale));
+            const { N } = camera.viewportProperties;
+            camera.move(scaleVec3(N, dZ*scale));
             this.redraw();
         });
     }
@@ -81,8 +68,17 @@ export default class InputManager {
     }
 
     private hasPointerLock() {
-        const canvas = document.getElementById('draw');
+        const canvas = this.renderer.canvas;
         return document.pointerLockElement === canvas;
+    }
+
+    public setRenderer(renderer : Renderer) {
+        this.renderer = renderer;
+        const canvas = renderer.canvas;
+        canvas.addEventListener('click', () => canvas.requestPointerLock());
+        this.startLookLoop();
+        this.startMovementLoop();
+        this.startScrollLoop();
     }
 
 }
