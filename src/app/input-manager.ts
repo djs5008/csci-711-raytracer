@@ -1,11 +1,9 @@
-import { addVec3, scaleVec3 } from "../model/util/vector3";
-import Renderer from "./renderer";
+import { addVec3, scaleVec3 } from '../model/util/vector';
+import Renderer from './renderer';
 
 export default class InputManager {
-
     private renderer : Renderer;
-    private keyToggles  : any       = {};
-    private inputDebouncer : number;
+    private keyToggles : any = {};
 
     private startLookLoop() {
         window.addEventListener('mousemove', (evt : MouseEvent) => {
@@ -14,7 +12,6 @@ export default class InputManager {
             const dX = -evt.movementX * 0.07;
             const dY = -evt.movementY * 0.07;
             camera.rotate(dX, dY);
-            this.redraw();
         });
     }
 
@@ -37,10 +34,9 @@ export default class InputManager {
             }
             if (dirX !== 0 || dirY !== 0) {
                 const camera = this.renderer.getCamera();
-                const { U, V } = camera.viewportProperties;
+                const { U, V } = camera.sceneProperties;
                 // right*(movementX,0,0) + forward*(0,0,movementZ)
                 camera.move(addVec3(scaleVec3(U, dirX*scale), scaleVec3(V, dirY*scale)));
-                this.redraw(true);
             }
         });
     }
@@ -49,25 +45,16 @@ export default class InputManager {
         window.addEventListener('wheel', (evt : WheelEvent) => {
             if (!this.hasPointerLock()) return;
             const scrollAmt = evt.deltaY;
-            const dZ        = scrollAmt;
-            const scale     = -0.01;
+            const dZ = scrollAmt;
+            const scale = -0.01;
 
             const camera = this.renderer.getCamera();
-            const { N } = camera.viewportProperties;
+            const { N } = camera.sceneProperties;
             camera.move(scaleVec3(N, dZ*scale));
-            this.redraw();
         });
     }
 
-    private redraw(force? : boolean) {
-        if (!force && this.inputDebouncer != null)
-            window.clearTimeout(this.inputDebouncer);
-        this.inputDebouncer = window.setTimeout(() => {
-            this.renderer.drawImage();
-        });
-    }
-
-    private hasPointerLock() {
+    public hasPointerLock() : boolean {
         const canvas = this.renderer.canvas;
         return document.pointerLockElement === canvas;
     }
@@ -80,5 +67,4 @@ export default class InputManager {
         this.startMovementLoop();
         this.startScrollLoop();
     }
-
 }

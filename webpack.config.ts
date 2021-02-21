@@ -8,14 +8,13 @@ module.exports = {
     plugins: [
         new webpack.ProgressPlugin(),
         new HtmlWebpackPlugin({
-            template: 'index.html'
+            template: 'index.html',
         }),
-        new MiniCssExtractPlugin()
+        new MiniCssExtractPlugin(),
     ],
     entry: './src/index.ts',
     module: {
         rules: [
-            
             {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
@@ -24,7 +23,7 @@ module.exports = {
             {
                 test: /\.css$/i,
                 use: [MiniCssExtractPlugin.loader, 'css-loader'],
-            }
+            },
         ],
     },
     resolve: {
@@ -36,9 +35,9 @@ module.exports = {
     },
     devServer: {
         open: true,
-        host: 'localhost'
+        host: 'localhost',
     },
     experiments: {
         topLevelAwait: true,
-    }
-}
+    },
+};

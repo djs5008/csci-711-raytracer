@@ -1,13 +1,12 @@
-import { EntityType } from "../entity";
-import PhysicalEntity from "../interfaces/physical-entity";
-import { dot } from "../util/vector3";
+import { EntityType } from '../entity';
+import PhysicalEntity from '../interfaces/physical-entity';
+import { dotVec3, subVec3, Vector3 } from '../util/vector';
 
 export default class Sphere extends PhysicalEntity {
-
     constructor(
-               center    : number[],
-        public radius    : number,
-               material? : number[],
+        center : Vector3,
+        public radius : number,
+        material? : Vector3,
     ) {
         super(EntityType.SPHERE, center, material);
     }
@@ -17,29 +16,18 @@ export default class Sphere extends PhysicalEntity {
             this.radius,
         ];
     }
-    
 }
 
 export function sphereIntersect(
-        centerX: number,
-        centerY: number,
-        centerZ: number,
-        radius: number,
-        rayPosX: number,
-        rayPosY: number,
-        rayPosZ: number,
-        rayDirX: number,
-        rayDirY: number,
-        rayDirZ: number) : number {
-    const eyeToCenterX = centerX - rayPosX;
-    const eyeToCenterY = centerY - rayPosY;
-    const eyeToCenterZ = centerZ - rayPosZ;
-    const sideLength = dot(eyeToCenterX, eyeToCenterY, eyeToCenterZ, rayDirX, rayDirY, rayDirZ);
-    const cameraToCenterLength = dot(eyeToCenterX, eyeToCenterY, eyeToCenterZ, eyeToCenterX, eyeToCenterY, eyeToCenterZ);
+    center : Vector3,
+    radius : number,
+    rayPos : Vector3,
+    rayDir : Vector3,
+) : number {
+    const eyeToCenter = subVec3(center, rayPos);
+    const sideLength = dotVec3(eyeToCenter, rayDir);
+    const cameraToCenterLength = dotVec3(eyeToCenter, eyeToCenter);
     const discriminant = (radius * radius) - cameraToCenterLength + (sideLength * sideLength);
-    if (discriminant < 0) {
-        return -1;
-    } else {
-        return sideLength - Math.sqrt(discriminant);
-    }
+    if (discriminant < 0) return -1;
+    return sideLength - Math.sqrt(discriminant);
 }

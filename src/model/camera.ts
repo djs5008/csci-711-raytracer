@@ -1,72 +1,72 @@
-import { glMatrix, mat4, vec3 } from "gl-matrix";
-import { IKernelRunShortcut, KernelOutput } from "gpu.js";
-import Entity from "./entity";
-import IRenderData from "./interfaces/render-data";
-import Bounds from "./util/bounds";
-import { addVec3, crossVec3, dotVec3, normalizeVec3, Vector3 } from "./util/vector3";
-import World from "./world";
+import { IKernelRunShortcut } from 'gpu.js';
+import Entity from './entity';
+import Bounds from './util/bounds';
+import { toRadian } from './util/math';
+import { addVec3, crossVec3, dotVec3, Matrix4, normalizeVec3, transformM4, Vector2, Vector3 } from './util/vector';
+import World from './world';
 
 interface ISceneProperties {
-    viewport    : number[];
-    eyepoint    : number[];
-    entities    : number[][];
-    N           : number[];
-    U           : number[];
-    V           : number[];
+    viewport : Vector2;
+    eyepoint : Vector3;
+    eyepointWorld : Vector3,
+    entities : number[][];
+    N : Vector3;
+    U : Vector3;
+    V : Vector3;
     aspectRatio : number;
-    fovScale    : number;
-    focalLen    : number;
-    cam2world   : number[];
+    fovScale : number;
+    focalLen : number;
 }
 
 class Camera extends Entity {
-
-    public static BG_COLOR    : number[] = [0.251, 0.59, 1];
-    public viewportProperties : ISceneProperties;
+    public static BG_COLOR : Vector3 = [0.251, 0.59, 1];
+    public sceneProperties : ISceneProperties;
 
     private aspectRatio : number;
-    private fovScale    : number;
-
-    private gpuKernel   : IKernelRunShortcut;
+    private fovScale : number;
+    private gpuKernel : IKernelRunShortcut;
 
     constructor(
-        private world    : World,
-        public  viewport : Bounds,
-                position : number[],
-        private lookAt   : number[],
-        private up       : number[] = [ 0, 1, 0 ],
-        private fov      : number = 90,
+        private world : World,
+        public viewport : Bounds,
+        position : Vector3,
+        private lookAt : Vector3,
+        private up : Vector3 = [0, 1, 0],
+        private fov : number = 90,
         private focalLen : number = 1,
-        private yaw      : number = 90,
-        private pitch    : number = 0,
+        private yaw : number = 90,
+        private pitch : number = 0,
     ) {
         super(null, position);
-        this.yaw    = 0;
-        this.pitch  = 0;
-        this.lookAt = [ 0, 0, 1 ];
+        this.yaw = 0;
+        this.pitch = 0;
+        this.lookAt = [0, 0, 1];
         this.rotate(yaw, pitch);
     }
 
     private setupViewportProperties() : void {
-        const eyepoint = this.position;
-        const entities = this.world.getPhysicalEntities();
-        const N = normalizeVec3(this.lookAt);
-        const U = normalizeVec3(crossVec3(N, Vector3.UP));
-        const V = normalizeVec3(crossVec3(U, N));
-        const aspectRatio = (this.aspectRatio) ?? this.viewport.h / this.viewport.w;
-        const fovScale = (this.fovScale) ?? Math.tan(glMatrix.toRadian(this.fov * 0.5));
-        const focalLen = this.focalLen;
+        const viewport : Vector2 = [this.viewport.w, this.viewport.h];
+        const eyepoint : Vector3 = this.position;
+        const entities : number[][] = this.world.getPhysicalEntities();
+        const N : Vector3 = normalizeVec3(this.lookAt);
+        const U : Vector3 = normalizeVec3(crossVec3(N, Vector3.UP));
+        const V : Vector3 = normalizeVec3(crossVec3(U, N));
+        const aspectRatio : number = (this.aspectRatio) ?? this.viewport.h / this.viewport.w;
+        const fovScale : number = (this.fovScale) ?? Math.tan(toRadian(this.fov * 0.5));
+        const focalLen : number = this.focalLen;
         if (!this.aspectRatio) this.aspectRatio = aspectRatio;
         if (!this.fovScale) this.fovScale = fovScale;
-        const cam2world : mat4 = [
+        const cam2world : Matrix4 = [
             U[0], V[0], N[0], 0,
             U[1], V[1], N[1], 0,
             U[2], V[2], N[2], 0,
-            -dotVec3(eyepoint, U), -dotVec3(eyepoint, V), -dotVec3(eyepoint, N), 1
+            -dotVec3(eyepoint, U), -dotVec3(eyepoint, V), -dotVec3(eyepoint, N), 1,
         ];
-        this.viewportProperties = {
-            viewport: [ this.viewport.w, this.viewport.h ],
+        const eyepointWorld : Vector3 = transformM4(this.position, cam2world);
+        this.sceneProperties = {
+            viewport,
             eyepoint,
+            eyepointWorld,
             entities,
             N,
             U,
@@ -74,17 +74,15 @@ class Camera extends Entity {
             aspectRatio,
             fovScale,
             focalLen,
-            cam2world,
         };
     }
 
     public render() : void {
         this.setupViewportProperties();
-
-        const { viewport, eyepoint, entities, N, U, V, aspectRatio, fovScale, focalLen, cam2world } = this.viewportProperties;
-        const output : KernelOutput = this.gpuKernel(
+        const {
             viewport,
             eyepoint,
+            eyepointWorld,
             entities,
             N,
             U,
@@ -92,11 +90,20 @@ class Camera extends Entity {
             aspectRatio,
             fovScale,
             focalLen,
-            cam2world
+        } = this.sceneProperties;
+        this.gpuKernel(
+            viewport,
+            eyepoint,
+            eyepointWorld,
+            entities,
+            N, U, V,
+            aspectRatio,
+            fovScale,
+            focalLen,
         );
     }
 
-    public move(movement : number[]) {
+    public move(movement : Vector3) {
         const cameraPos = this.position;
         super.position = [
             cameraPos[0] + movement[0],
@@ -106,14 +113,16 @@ class Camera extends Entity {
     }
 
     public rotate(yaw : number, pitch : number) {
+        const newPitch = (this.pitch + pitch);
+        if (newPitch < -90 || newPitch > 90) pitch = 0;
         this.yaw   += yaw;
         this.pitch += pitch;
-        const yawR   = glMatrix.toRadian(this.yaw);
-        const pitchR = glMatrix.toRadian(this.pitch);
+        const yawR   = toRadian(this.yaw);
+        const pitchR = toRadian(this.pitch);
         const x = Math.cos(yawR) * Math.cos(pitchR);
         const y = Math.sin(pitchR);
         const z = Math.sin(yawR) * Math.cos(pitchR);
-        this.lookAt = normalizeVec3(addVec3(this.lookAt, [ x, y, z ]));
+        this.lookAt = normalizeVec3(addVec3(this.lookAt, [x, y, z]));
     }
 
     public setViewport(bounds : Bounds) {
@@ -123,7 +132,6 @@ class Camera extends Entity {
     public setKernel(kernel : IKernelRunShortcut) {
         this.gpuKernel = kernel;
     }
-
 }
 
 export default Camera;
