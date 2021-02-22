@@ -97,7 +97,6 @@ export default class Renderer {
             const pY = scaleVec3(v, ((0 + (y / h) - 0.5) * yScale) * invFocalLen);
             const rayDir = normalizeVec3(addVec3(addVec3(n, pX), pY));
 
-            // let nearestEntityIndex = -1;
             const BG_COLOR : Vector3 = [0.25, 0.6, 1];
 
             let   BASE   = 0;
@@ -110,8 +109,6 @@ export default class Renderer {
             let color : Vector3 = [ 0, 0, 0 ];
             let accOpacity = 0;
             let lastHitPos = eye;
-            // let lastHitIndex = -1;
-            let hit = false;
 
             while (accOpacity < 1) {
                 const rayPos = lastHitPos;
@@ -154,13 +151,11 @@ export default class Renderer {
                 }
 
                 if (nearestEntityDistance === 0xFFFFFFFF) {
-                    // If we have hit anything before, add the background color too!
-                    if (hit) color = addVec3(color, scaleVec3(BG_COLOR, 1-accOpacity));
+                    color = addVec3(color, scaleVec3(BG_COLOR, 1-accOpacity));
                     break;
                 } else {
-                    hit = true;
                     const translucency = 1 - accOpacity;
-                    lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (1 + 0.000001)));
+                    lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * 1.01));
                     color = addVec3(color, scaleVec3(
                         [
                             entities[nearestEntityIndex][E_MAT+0],
@@ -170,11 +165,6 @@ export default class Renderer {
                     );
                     accOpacity += ((translucency) * nearestEntityOpacity);
                 }
-            }
-
-            // Did not hit? Default to background color
-            if (hit === false) {
-                color = BG_COLOR;
             }
 
             // Set color

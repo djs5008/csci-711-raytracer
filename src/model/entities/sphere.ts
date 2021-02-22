@@ -33,10 +33,7 @@ export function sphereIntersect(
     if (discriminant < 0) return -1;
     const t1 = sideLength - Math.sqrt(discriminant);
     const t2 = sideLength + Math.sqrt(discriminant);
-    const minT = Math.min(t1, t2);
-    if (minT < 0) {
-        return Math.max(t1, t2);
-    } else {
-        return minT;
-    }
+    if (t1 > 0) return t1;
+    if (t2 > 0) return t2;
+    return -1;
 }
