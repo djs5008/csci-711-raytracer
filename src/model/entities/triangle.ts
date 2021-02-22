@@ -7,8 +7,9 @@ export default class Triangle extends PhysicalEntity {
         public vertices : Vector3[],
         public normal : Vector3,
         material? : Vector3,
+        opacity?  : number,
     ) {
-        super(EntityType.TRIANGLE, null, material);
+        super(EntityType.TRIANGLE, null, material, opacity);
     }
 
     getPhysicalProperties() : number[] {
@@ -17,6 +18,7 @@ export default class Triangle extends PhysicalEntity {
             vertices.push(...vertex);
         }
         return [
+            ...super.getPhysicalProperties(),
             ...vertices,
         ];
     }

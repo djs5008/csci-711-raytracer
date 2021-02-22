@@ -1,3 +1,4 @@
+/* eslint-disable no-invalid-this */
 import { GPU, IKernelRunShortcut } from 'gpu.js';
 import Camera from '../model/camera';
 import { EntityType } from '../model/entity';
@@ -10,10 +11,8 @@ export default class KernelManager {
     constructor(
         private gpu : GPU,
     ) {
-        [
-            ...vectorFunctions,
-            ...intersectFunctions,
-        ].forEach((def) => gpu.addFunction(def.source as any, def.settings as any));
+        [ ...vectorFunctions, ...intersectFunctions ]
+            .forEach((def) => gpu.addFunction(def.source as any, def.settings as any));
     }
 
     public createKernel(camera : Camera, world : World) : IKernelRunShortcut {
@@ -23,7 +22,6 @@ export default class KernelManager {
             output: [camera.viewport.w, camera.viewport.h],
             graphical: true,
             dynamicOutput: true,
-            tactic: 'speed',
             constants: {
                 ENTITY_COUNT: world.getPhysicalEntities().length,
                 SPHERE: EntityType.SPHERE,

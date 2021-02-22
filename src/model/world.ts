@@ -23,9 +23,6 @@ export default class World {
         for (const entity of physicalEntities) {
             const physicalProps = Array.from({ ...entity.getPhysicalProperties(), length: 32 });
             result.push([
-                entity.type,
-                ...(entity.position||[0, 0, 0]),
-                ...(entity.material||[1, 1, 1]),
                 ...physicalProps,
             ]);
         }

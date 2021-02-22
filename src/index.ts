@@ -25,12 +25,14 @@ const world = new World();
 const sphere1 = new Sphere(
     [-0.25, 2.5, 4],
     1.4,
-    [0.2, 0.2, 0.2],
+    [0, 0, 0.6],
+    0.75,
 );
 const sphere2 = new Sphere(
     [1.25, 1.5, 6.5],
     1.2,
     [0.3, 0.3, 0.3],
+    0.95,
 );
 const grid = new Plane([0, -1, 0]);
 const ground1 = new Triangle(
@@ -59,6 +61,7 @@ const pyramid1 = new Triangle(
     ],
     [0, 1, 0],
     [0.7, 0.69, 0.420],
+    0.75,
 );
 const pyramid2 = new Triangle(
     [
@@ -68,6 +71,7 @@ const pyramid2 = new Triangle(
     ],
     [0, 1, 0],
     [0.420, 0.7, 0.69],
+    0.75,
 );
 const pyramid3 = new Triangle(
     [
@@ -77,6 +81,7 @@ const pyramid3 = new Triangle(
     ],
     [0, 1, 0],
     [0.69, 0.420, 0.7],
+    0.75,
 );
 const pyramid4 = new Triangle(
     [
@@ -86,6 +91,7 @@ const pyramid4 = new Triangle(
     ],
     [0, 1, 0],
     [0.3, 0.3, 0.721],
+    0.75,
 );
 
 const camera = new Camera(

@@ -7,12 +7,12 @@ export default class Plane extends PhysicalEntity {
     constructor(
         public normal : Vector3,
     ) {
-        super(EntityType.PLANE, null);
-        this.material = scaleVec3(Camera.BG_COLOR, 0.75);
+        super(EntityType.PLANE, null, scaleVec3(Camera.BG_COLOR, 0.75), 0.8);
     }
 
     public getPhysicalProperties() : number[] {
         return [
+            ...super.getPhysicalProperties(),
             ...this.normal,
         ];
     }
