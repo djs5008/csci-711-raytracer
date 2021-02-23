@@ -47,7 +47,7 @@ class Camera extends Entity {
     private setupViewportProperties() : void {
         const viewport : Vector2 = [this.viewport.w, this.viewport.h];
         const eyepoint : Vector3 = this.position;
-        const entities : number[][] = this.world.getPhysicalEntities();
+        const entities : any = this.world.getPhysicalEntities();
         const N : Vector3 = normalizeVec3(this.lookAt);
         const U : Vector3 = normalizeVec3(crossVec3(N, Vector3.UP));
         const V : Vector3 = normalizeVec3(crossVec3(U, N));

@@ -1,6 +1,7 @@
 export type Vector2 = number[];
 export type Vector3 = number[];
 export type Matrix4 = number[];
+export type Color   = Vector3;
 export namespace Vector3 {
     export const UP : Vector3 = [0, 1, 0];
 }

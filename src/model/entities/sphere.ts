@@ -1,15 +1,27 @@
 import { EntityType } from '../entity';
 import PhysicalEntity from '../interfaces/physical-entity';
+import Material from '../material';
 import { dotVec3, subVec3, Vector3 } from '../util/vector';
 
 export default class Sphere extends PhysicalEntity {
     constructor(
-        center : Vector3,
+        public center : Vector3,
         public radius : number,
-        material? : Vector3,
-        opacity?  : number,
+        material? : Material,
     ) {
-        super(EntityType.SPHERE, center, material, opacity);
+        super(
+            EntityType.SPHERE,
+            center,
+            new Material(
+                material?.diffuseColor,
+                material?.specularColor,
+                material?.ambient,
+                material?.diffuse,
+                material?.specular,
+                material?.exponent,
+                material?.opacity,
+            ),
+        );
     }
 
     public getPhysicalProperties() : number[] {

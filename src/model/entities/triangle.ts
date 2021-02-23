@@ -1,18 +1,29 @@
 import { EntityType } from '../entity';
 import PhysicalEntity from '../interfaces/physical-entity';
+import Material from '../material';
 import { crossVec3, dotVec3, subVec3, Vector3 } from '../util/vector';
 
 export default class Triangle extends PhysicalEntity {
     constructor(
         public vertices : Vector3[],
         public normal : Vector3,
-        material? : Vector3,
-        opacity?  : number,
+        material? : Material,
     ) {
-        super(EntityType.TRIANGLE, null, material, opacity);
+        super(EntityType.TRIANGLE,
+            null,
+            new Material(
+                material?.diffuseColor,
+                material?.specularColor,
+                material?.ambient,
+                material?.diffuse,
+                material?.specular,
+                material?.exponent,
+                material?.opacity,
+            ),
+        );
     }
 
-    getPhysicalProperties() : number[] {
+    public getPhysicalProperties() : number[] {
         const vertices = [];
         for (const vertex of this.vertices) {
             vertices.push(...vertex);

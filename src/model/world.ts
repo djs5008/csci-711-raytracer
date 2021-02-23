@@ -11,8 +11,8 @@ export default class World {
         ];
     }
 
-    public getPhysicalEntities() : number[][] {
-        const result : number[][] = [];
+    public getPhysicalEntities() {
+        const result = [];
         const physicalEntities = [];
         const entities = this.entities;
         for (const entity of entities) {

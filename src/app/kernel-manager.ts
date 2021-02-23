@@ -22,6 +22,7 @@ export default class KernelManager {
             output: [camera.viewport.w, camera.viewport.h],
             graphical: true,
             dynamicOutput: true,
+            debug: false,
             constants: {
                 ENTITY_COUNT: world.getPhysicalEntities().length,
                 SPHERE: EntityType.SPHERE,

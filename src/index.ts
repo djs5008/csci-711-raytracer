@@ -11,6 +11,7 @@ import World from './model/world';
 import SettingsManager from './app/settings-manager';
 import KernelManager from './app/kernel-manager';
 import { Vector3 } from './model/util/vector';
+import Material from './model/material';
 
 const inputManager = new InputManager();
 const gpu = new GPU();
@@ -25,16 +26,17 @@ const world = new World();
 const sphere1 = new Sphere(
     [-0.25, 2.5, 4],
     1.4,
-    [0, 0, 0.6],
-    0.75,
+    new Material([0, 0, 0.6]).setOpacity(0.5),
 );
 const sphere2 = new Sphere(
     [1.25, 1.5, 6.5],
     1.2,
-    [0.3, 0.3, 0.3],
-    0.95,
+    new Material([0.3, 0.3, 0.3]).setOpacity(0.6),
 );
-const grid = new Plane([0, -1, 0]);
+const grid = new Plane(
+    [0, -1, 0],
+    new Material([0, 0, 0]).setOpacity(0.3),
+);
 const ground1 = new Triangle(
     [
         [-3, -0.1, -2],
@@ -42,7 +44,7 @@ const ground1 = new Triangle(
         [5, -0.1, -2],
     ],
     [0, 1, 0],
-    [0.711, 0, 0],
+    new Material([0.420, 0, 0]),
 );
 const ground2 = new Triangle(
     [
@@ -51,7 +53,7 @@ const ground2 = new Triangle(
         [5, -0.1, -2],
     ],
     [0, 1, 0],
-    [0.711, 0, 0],
+    new Material([0.420, 0, 0]),
 );
 const pyramid1 = new Triangle(
     [
@@ -60,8 +62,8 @@ const pyramid1 = new Triangle(
         [1, 0, 0],
     ],
     [0, 1, 0],
-    [0.7, 0.69, 0.420],
-    0.75,
+    new Material([0.7, 0.69, 0.420])
+        .setOpacity(0.75),
 );
 const pyramid2 = new Triangle(
     [
@@ -70,8 +72,8 @@ const pyramid2 = new Triangle(
         [0, 0, 1],
     ],
     [0, 1, 0],
-    [0.420, 0.7, 0.69],
-    0.75,
+    new Material([0.420, 0.7, 0.69])
+        .setOpacity(0.75),
 );
 const pyramid3 = new Triangle(
     [
@@ -80,8 +82,8 @@ const pyramid3 = new Triangle(
         [1, 0, 0],
     ],
     [0, 1, 0],
-    [0.69, 0.420, 0.7],
-    0.75,
+    new Material([0.69, 0.420, 0.7])
+        .setOpacity(0.75),
 );
 const pyramid4 = new Triangle(
     [
@@ -90,8 +92,8 @@ const pyramid4 = new Triangle(
         [1, 0, 1],
     ],
     [0, 1, 0],
-    [0.3, 0.3, 0.721],
-    0.75,
+    new Material([0.3, 0.3, 0.721])
+        .setOpacity(0.75),
 );
 
 const camera = new Camera(

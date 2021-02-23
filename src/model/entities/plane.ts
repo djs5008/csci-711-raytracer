@@ -1,13 +1,26 @@
-import Camera from '../camera';
 import { EntityType } from '../entity';
 import PhysicalEntity from '../interfaces/physical-entity';
+import Material from '../material';
 import { addVec3, dotVec3, scaleVec3, Vector3 } from '../util/vector';
 
 export default class Plane extends PhysicalEntity {
     constructor(
-        public normal : Vector3,
+        public normal    : Vector3,
+        material? : Material,
     ) {
-        super(EntityType.PLANE, null, scaleVec3(Camera.BG_COLOR, 0.75), 0.8);
+        super(
+            EntityType.PLANE,
+            null,
+            new Material(
+                material?.diffuseColor,
+                material?.specularColor,
+                material?.ambient,
+                material?.diffuse,
+                material?.specular,
+                material?.exponent,
+                material?.opacity,
+            ),
+        );
     }
 
     public getPhysicalProperties() : number[] {
