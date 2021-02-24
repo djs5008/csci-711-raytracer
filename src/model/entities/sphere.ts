@@ -9,19 +9,7 @@ export default class Sphere extends PhysicalEntity {
         public radius : number,
         material? : Material,
     ) {
-        super(
-            EntityType.SPHERE,
-            center,
-            new Material(
-                material?.diffuseColor,
-                material?.specularColor,
-                material?.ambient,
-                material?.diffuse,
-                material?.specular,
-                material?.exponent,
-                material?.opacity,
-            ),
-        );
+        super(EntityType.SPHERE, center, material);
     }
 
     public getPhysicalProperties() : number[] {
