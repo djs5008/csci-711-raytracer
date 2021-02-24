@@ -9,18 +9,7 @@ export default class Triangle extends PhysicalEntity {
         public normal : Vector3,
         material? : Material,
     ) {
-        super(EntityType.TRIANGLE,
-            null,
-            new Material(
-                material?.diffuseColor,
-                material?.specularColor,
-                material?.ambient,
-                material?.diffuse,
-                material?.specular,
-                material?.exponent,
-                material?.opacity,
-            ),
-        );
+        super(EntityType.TRIANGLE, null, material);
     }
 
     public getPhysicalProperties() : number[] {
