@@ -62,12 +62,12 @@ const ground2 = new Triangle(
 );
 const pyramid1 = new Triangle(
     [
-        [0.5, 0.75, 0.5],
-        [1, 0, 1],
         [1, 0, 0],
+        [1, 0, 1],
+        [0.5, 0.75, 0.5],
     ],
     [0, 1, 0],
-    new Material([0.7, 0.69, 0.420]),
+    new Material([0.7, 0.69, 0.420]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
 );
 const pyramid2 = new Triangle(
     [
@@ -76,7 +76,7 @@ const pyramid2 = new Triangle(
         [0, 0, 1],
     ],
     [0, 1, 0],
-    new Material([0.420, 0.7, 0.69]),
+    new Material([0.420, 0.7, 0.69]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
 );
 const pyramid3 = new Triangle(
     [
@@ -85,7 +85,7 @@ const pyramid3 = new Triangle(
         [1, 0, 0],
     ],
     [0, 1, 0],
-    new Material([0.69, 0.420, 0.7]),
+    new Material([0.69, 0.420, 0.7]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
 );
 const pyramid4 = new Triangle(
     [
@@ -94,10 +94,10 @@ const pyramid4 = new Triangle(
         [1, 0, 1],
     ],
     [0, 1, 0],
-    new Material([0.3, 0.3, 0.721]),
+    new Material([0.3, 0.3, 0.721]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
 );
 const light1 = new Light(
-    [ -10, 35, 0 ],
+    [ 0, 15, -5 ],
     [ 0, 1, 0 ],
 );
 const light2 = new Light(
