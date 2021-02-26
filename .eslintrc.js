@@ -25,5 +25,6 @@ module.exports = {
         'no-unused-vars': 'off',
         '@typescript-eslint/no-unused-vars': ['error'],
         'no-multi-spaces': 'off',
+        'linebreak-style': 'off',
     },
 };

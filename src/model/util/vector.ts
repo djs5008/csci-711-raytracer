@@ -30,13 +30,23 @@ export function scaleVec3(a : Vector3, x : number) : Vector3 {
     return [a[0] * x, a[1] * x, a[2] * x];
 }
 
-export function normalizeVec3(a: Vector3) : Vector3 {
-    const mag = magnitudeVec3(a);
-    return scaleVec3(a, 1 / mag);
-}
-
 export function magnitudeVec3(a : Vector3) : number {
     return Math.sqrt(dotVec3(a, a));
+}
+
+export function normalizeVec3(a: Vector3) : Vector3 {
+    const dot = (a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
+    const mag = Math.sqrt(dot);
+    const x = 1 / mag;
+    return [a[0] * x, a[1] * x, a[2] * x];
+}
+
+export function multiplyVec3(a : Vector3, b : Vector3) : Vector3 {
+    return [
+        a[0] * b[0],
+        a[1] * b[1],
+        a[2] * b[2],
+    ];
 }
 
 export function transformM4(a : Vector3, m : Matrix4) : Vector3 {
@@ -47,6 +57,10 @@ export function transformM4(a : Vector3, m : Matrix4) : Vector3 {
         (m[1] * x + m[5] * y + m[9] * z + m[13]) / w,
         (m[2] * x + m[6] * y + m[10] * z + m[14]) / w,
     ];
+}
+
+export function toVec3(a : number[]) {
+    return [ a[0], a[1], a[2] ];
 }
 
 export const vectorFunctions = [
@@ -79,17 +93,17 @@ export const vectorFunctions = [
         },
     },
     {
-        source: scaleVec3,
-        settings: {
-            argumentTypes: { a: 'Array(3)', x: 'Number' },
-            returnType: 'Array(3)',
-        },
-    },
-    {
         source: magnitudeVec3,
         settings: {
             argumentTypes: { a: 'Array(3)' },
             returnType: 'Number',
+        },
+    },
+    {
+        source: scaleVec3,
+        settings: {
+            argumentTypes: { a: 'Array(3)', x: 'Number' },
+            returnType: 'Array(3)',
         },
     },
     {
@@ -99,4 +113,18 @@ export const vectorFunctions = [
             returnType: 'Array(3)',
         },
     },
+    {
+        source: multiplyVec3,
+        settings: {
+            argumentTypes: { a: 'Array(3)', b: 'Array(3)' },
+            returnType: 'Array(3)',
+        },
+    },
+    // {
+    //     source: toVec3,
+    //     settings: {
+    //         argumentTypes: { a: 'Array' },
+    //         returnType: 'Array(3)',
+    //     },
+    // },
 ];

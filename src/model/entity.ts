@@ -2,7 +2,7 @@ import Material from './material';
 import { Vector3 } from './util/vector';
 
 export enum EntityType {
-    SPHERE, PLANE, TRIANGLE,
+    SPHERE, PLANE, TRIANGLE, LIGHT
 }
 
 export default abstract class Entity {

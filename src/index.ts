@@ -12,6 +12,8 @@ import SettingsManager from './app/settings-manager';
 import KernelManager from './app/kernel-manager';
 import { Vector3 } from './model/util/vector';
 import Material from './model/material';
+import Light from './model/light';
+import ModelLoader from './app/model-loader';
 
 const inputManager = new InputManager();
 const gpu = new GPU();
@@ -26,16 +28,19 @@ const world = new World();
 const sphere1 = new Sphere(
     [-0.25, 2.5, 4],
     1.4,
-    new Material([0, 0, 0.6]).setOpacity(0.5),
+    new Material([0, 0, 0.6]),
 );
 const sphere2 = new Sphere(
-    [1.25, 1.5, 6.5],
+    [1.25, 1.5, 6.25],
     1.2,
-    new Material([0.3, 0.3, 0.3]).setOpacity(0.6),
+    new Material([0.3, 0.3, 0.3])
+        .setExponent(40)
+        .setDiffuse(0.5)
+        .setSpecular(0.5),
 );
 const grid = new Plane(
     [0, -1, 0],
-    new Material([0, 0, 0]).setOpacity(0.3),
+    new Material([0, 0, 0]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
 );
 const ground1 = new Triangle(
     [
@@ -48,9 +53,9 @@ const ground1 = new Triangle(
 );
 const ground2 = new Triangle(
     [
-        [5, -0.1, 19],
-        [-3, -0.1, 19],
         [5, -0.1, -2],
+        [-3, -0.1, 19],
+        [5, -0.1, 19],
     ],
     [0, 1, 0],
     new Material([0.420, 0, 0]),
@@ -62,8 +67,7 @@ const pyramid1 = new Triangle(
         [1, 0, 0],
     ],
     [0, 1, 0],
-    new Material([0.7, 0.69, 0.420])
-        .setOpacity(0.75),
+    new Material([0.7, 0.69, 0.420]),
 );
 const pyramid2 = new Triangle(
     [
@@ -72,8 +76,7 @@ const pyramid2 = new Triangle(
         [0, 0, 1],
     ],
     [0, 1, 0],
-    new Material([0.420, 0.7, 0.69])
-        .setOpacity(0.75),
+    new Material([0.420, 0.7, 0.69]),
 );
 const pyramid3 = new Triangle(
     [
@@ -82,8 +85,7 @@ const pyramid3 = new Triangle(
         [1, 0, 0],
     ],
     [0, 1, 0],
-    new Material([0.69, 0.420, 0.7])
-        .setOpacity(0.75),
+    new Material([0.69, 0.420, 0.7]),
 );
 const pyramid4 = new Triangle(
     [
@@ -92,24 +94,33 @@ const pyramid4 = new Triangle(
         [1, 0, 1],
     ],
     [0, 1, 0],
-    new Material([0.3, 0.3, 0.721])
-        .setOpacity(0.75),
+    new Material([0.3, 0.3, 0.721]),
+);
+const light1 = new Light(
+    [ -10, 35, 0 ],
+    [ 0, 1, 0 ],
+);
+const light2 = new Light(
+    [ 10, 5, 20 ],
+    [ 1, 0, 1 ],
 );
 
 const camera = new Camera(
     world,
     renderer.resolution, // Viewport
-    [0, 2.5, -5], // Position
-    [0, 0, 0.1], // Lookat
+    [-0.02, 0.175, 0.2], // Position
+    [0, 0, -1], // Lookat
     Vector3.UP,
     90,
-    1,
-    90,
-    -10,
+    0.5,
+    -89,
+    -45,
 );
 
+const bunnyTriangles = await ModelLoader.loadModel('/bunny.obj');
+
 // Add entities to world
-world.add(
+world.addEntities(
     sphere1,
     sphere2,
     grid,
@@ -119,8 +130,22 @@ world.add(
     pyramid2,
     pyramid3,
     pyramid4,
+    // ...getTriangles(),
+    // ...bunnyTriangles,
+);
+
+world.addLights(
+    light1,
+    light2,
+);
+
+world.addCameras(
     camera,
 );
+
+// world.addActions(
+//     action,
+// );
 
 const gpuKernel = kernelManager.createKernel(camera, world);
 camera.setKernel(gpuKernel);

@@ -8,8 +8,9 @@ import World from './world';
 interface ISceneProperties {
     viewport : Vector2;
     eyepoint : Vector3;
-    eyepointWorld : Vector3,
+    eyepointWorld : Vector3;
     entities : number[][];
+    lights : number[][];
     N : Vector3;
     U : Vector3;
     V : Vector3;
@@ -26,6 +27,9 @@ class Camera extends Entity {
     private fovScale : number;
     private gpuKernel : IKernelRunShortcut;
 
+    private entities : number[][];
+    private lights   : number[][];
+
     constructor(
         private world : World,
         public viewport : Bounds,
@@ -34,20 +38,21 @@ class Camera extends Entity {
         private up : Vector3 = [0, 1, 0],
         private fov : number = 90,
         private focalLen : number = 1,
-        private yaw : number = 90,
-        private pitch : number = 0,
+        public yaw : number = 90,
+        public pitch : number = 0,
     ) {
         super(null, position);
         this.yaw = 0;
         this.pitch = 0;
-        this.lookAt = [0, 0, 1];
+        // this.lookAt = [0, 0, 1];
         this.rotate(yaw, pitch);
     }
 
-    private setupViewportProperties() : void {
+    private setupSceneProperties() : void {
         const viewport : Vector2 = [this.viewport.w, this.viewport.h];
         const eyepoint : Vector3 = this.position;
-        const entities : any = this.world.getPhysicalEntities();
+        this.lights     = (this.lights || this.world.getLights());
+        this.entities   = (this.entities || this.world.getEntities());
         const N : Vector3 = normalizeVec3(this.lookAt);
         const U : Vector3 = normalizeVec3(crossVec3(N, Vector3.UP));
         const V : Vector3 = normalizeVec3(crossVec3(U, N));
@@ -56,21 +61,20 @@ class Camera extends Entity {
         const focalLen : number = this.focalLen;
         if (!this.aspectRatio) this.aspectRatio = aspectRatio;
         if (!this.fovScale) this.fovScale = fovScale;
-        const cam2world : Matrix4 = [
-            U[0], V[0], N[0], 0,
-            U[1], V[1], N[1], 0,
-            U[2], V[2], N[2], 0,
-            -dotVec3(eyepoint, U), -dotVec3(eyepoint, V), -dotVec3(eyepoint, N), 1,
-        ];
-        const eyepointWorld : Vector3 = transformM4(this.position, cam2world);
+        // const cam2world : Matrix4 = [
+        //     U[0], V[0], N[0], 0,
+        //     U[1], V[1], N[1], 0,
+        //     U[2], V[2], N[2], 0,
+        //     -dotVec3(eyepoint, U), -dotVec3(eyepoint, V), -dotVec3(eyepoint, N), 1,
+        // ];
+        // const eyepointWorld : Vector3 = transformM4(this.position, cam2world);
         this.sceneProperties = {
             viewport,
             eyepoint,
-            eyepointWorld,
-            entities,
-            N,
-            U,
-            V,
+            eyepointWorld: [0, 0, 0],
+            entities: this.entities,
+            lights: this.lights,
+            N, U, V,
             aspectRatio,
             fovScale,
             focalLen,
@@ -78,15 +82,14 @@ class Camera extends Entity {
     }
 
     public render() : void {
-        this.setupViewportProperties();
+        this.setupSceneProperties();
         const {
             viewport,
             eyepoint,
             eyepointWorld,
             entities,
-            N,
-            U,
-            V,
+            lights,
+            N, U, V,
             aspectRatio,
             fovScale,
             focalLen,
@@ -96,6 +99,7 @@ class Camera extends Entity {
             eyepoint,
             eyepointWorld,
             entities,
+            lights,
             N, U, V,
             aspectRatio,
             fovScale,

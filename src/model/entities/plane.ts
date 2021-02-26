@@ -23,7 +23,6 @@ export function planeIntersect(
     normal : Vector3,
     rayPos : Vector3,
     rayDir : Vector3,
-    e2w : Vector3,
 ) : number {
     const denom = dotVec3(normal, rayDir);
     // if (denom <= 0) return -1;
@@ -32,11 +31,19 @@ export function planeIntersect(
     const t = dotVec3(p0l0, normal) / denom;
     if (t < 0 || t > 50) return -1;
 
-    const point = scaleVec3(addVec3(scaleVec3(addVec3(e2w, rayDir), t), rayPos), 10);
+    const point = planePoint(rayPos, rayDir, t);
 
-    if (Math.round(point[0]) % 15 === 0 || Math.round(point[2]) % 15 === 0) {
+    if (Math.round(point[0]*10) % 15 === 0 || Math.round(point[2]*10) % 15 === 0) {
         return t;
     }
 
     return -1;
+}
+
+export function planePoint(
+    rayPos   : Vector3,
+    rayDir   : Vector3,
+    distance : number,
+) {
+    return addVec3(scaleVec3(rayDir, distance), rayPos);
 }

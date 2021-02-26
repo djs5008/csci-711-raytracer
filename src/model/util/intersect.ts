@@ -1,6 +1,6 @@
-import { planeIntersect } from '../entities/plane';
-import { sphereIntersect } from '../entities/sphere';
-import { triangleIntersect } from '../entities/triangle';
+import { planeIntersect, planePoint } from '../entities/plane';
+import { sphereIntersect, sphereNormal, spherePoint } from '../entities/sphere';
+import { triangleIntersect, triangleNormal, trianglePoint } from '../entities/triangle';
 
 export const intersectFunctions = [
     {
@@ -11,10 +11,17 @@ export const intersectFunctions = [
         },
     },
     {
-        source: planeIntersect,
+        source: sphereNormal,
         settings: {
-            argumentTypes: { normal: 'Array(3)', rayPos: 'Array(3)', rayDir: 'Array(3)', e2w: 'Array(3)' },
-            returnType: 'Number',
+            argumentTypes: { center: 'Array(3)', rayPos: 'Array(3)', rayDir: 'Array(3)', distance: 'Number' },
+            returnType: 'Array(3)',
+        },
+    },
+    {
+        source: spherePoint,
+        settings: {
+            argumentTypes: { rayPos: 'Array(3)', rayDir: 'Array(3)', distance: 'Number' },
+            returnType: 'Array(3)',
         },
     },
     {
@@ -22,6 +29,34 @@ export const intersectFunctions = [
         settings: {
             argumentTypes: { vertex0: 'Array(3)', vertex1: 'Array(3)', vertex2: 'Array(3)', rayPos: 'Array(3)', rayDir: 'Array(3)' },
             returnType: 'Number',
+        },
+    },
+    {
+        source: triangleNormal,
+        settings: {
+            argumentTypes: { vertex0: 'Array(3)', vertex1: 'Array(3)', vertex2: 'Array(3)' },
+            returnType: 'Array(3)',
+        },
+    },
+    {
+        source: trianglePoint,
+        settings: {
+            argumentTypes: { rayPos: 'Array(3)', rayDir: 'Array(3)', distance: 'Number' },
+            returnType: 'Array(3)',
+        },
+    },
+    {
+        source: planeIntersect,
+        settings: {
+            argumentTypes: { normal: 'Array(3)', rayPos: 'Array(3)', rayDir: 'Array(3)' },
+            returnType: 'Number',
+        },
+    },
+    {
+        source: planePoint,
+        settings: {
+            argumentTypes: { rayPos: 'Array(3)', rayDir: 'Array(3)', distance: 'Number' },
+            returnType: 'Array(3)',
         },
     },
 ];

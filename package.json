@@ -11,7 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "gpu.js": "^2.11.2"
+    "gpu.js": "^2.11.2",
+    "parse-ply": "^0.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",

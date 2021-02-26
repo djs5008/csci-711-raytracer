@@ -1,7 +1,7 @@
 import { EntityType } from '../entity';
 import PhysicalEntity from '../interfaces/physical-entity';
 import Material from '../material';
-import { crossVec3, dotVec3, subVec3, Vector3 } from '../util/vector';
+import { addVec3, crossVec3, dotVec3, normalizeVec3, scaleVec3, subVec3, Vector3 } from '../util/vector';
 
 export default class Triangle extends PhysicalEntity {
     constructor(
@@ -53,4 +53,22 @@ export function triangleIntersect(
     if (t < 0) return -1;
 
     return t;
+}
+
+export function trianglePoint(
+    rayPos   : Vector3,
+    rayDir   : Vector3,
+    distance : number,
+) : Vector3 {
+    return addVec3(scaleVec3(rayDir, distance), rayPos);
+}
+
+export function triangleNormal(
+    vertex0 : Vector3,
+    vertex1 : Vector3,
+    vertex2 : Vector3,
+) : Vector3 {
+    const edge1 = subVec3(vertex1, vertex0);
+    const edge2 = subVec3(vertex2, vertex0);
+    return normalizeVec3(crossVec3(edge2, edge1));
 }

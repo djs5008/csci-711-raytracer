@@ -4,10 +4,10 @@ export default class Material {
     constructor(
         public diffuseColor  : Color = [ 0, 0, 0 ], // Basic Color
         public specularColor : Color = [ 1, 1, 1 ], // Specular Highlight Color
-        public ambient  : number = 0.0, // kA
+        public ambient  : number = 0.2, // kA
         public diffuse  : number = 0.5, // kD
         public specular : number = 0.5, // kS
-        public exponent : number = 0.0, // kE
+        public exponent : number = 5, // kE
         public opacity  : number = 1.0, // Opacity
     ) {
         if (diffuse + specular > 1) {
