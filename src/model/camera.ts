@@ -2,7 +2,7 @@ import { IKernelRunShortcut } from 'gpu.js';
 import Entity from './entity';
 import Bounds from './util/bounds';
 import { toRadian } from './util/math';
-import { addVec3, crossVec3, dotVec3, Matrix4, normalizeVec3, transformM4, Vector2, Vector3 } from './util/vector';
+import { addVec3, crossVec3, normalizeVec3, Vector2, Vector3 } from './util/vector';
 import World from './world';
 
 interface ISceneProperties {

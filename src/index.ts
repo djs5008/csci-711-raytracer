@@ -117,7 +117,8 @@ const camera = new Camera(
     -45,
 );
 
-const bunnyTriangles = await ModelLoader.loadModel('/bunny.obj');
+// TODO: Make this faster
+// const bunnyTriangles = await ModelLoader.loadModel('/bunny.obj');
 
 // Add entities to world
 world.addEntities(
@@ -130,8 +131,7 @@ world.addEntities(
     pyramid2,
     pyramid3,
     pyramid4,
-    // ...getTriangles(),
-    // ...bunnyTriangles,
+    // ...bunnyTriangles, // Caution... this will be very slow
 );
 
 world.addLights(
