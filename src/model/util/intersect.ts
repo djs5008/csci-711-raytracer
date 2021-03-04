@@ -1,3 +1,4 @@
+import { voxelIntersect, voxelNormal, voxelPoint } from '../entities/voxel';
 import { planeIntersect, planePoint } from '../entities/plane';
 import { sphereIntersect, sphereNormal, spherePoint } from '../entities/sphere';
 import { triangleIntersect, triangleNormal, trianglePoint } from '../entities/triangle';
@@ -56,6 +57,27 @@ export const intersectFunctions = [
         source: planePoint,
         settings: {
             argumentTypes: { rayPos: 'Array(3)', rayDir: 'Array(3)', distance: 'Number' },
+            returnType: 'Array(3)',
+        },
+    },
+    {
+        source: voxelIntersect,
+        settings: {
+            argumentTypes: { rayPos: 'Array(3)', rayDir: 'Array(3)', minX: 'Number', maxX: 'Number', minY: 'Number', maxY: 'Number', minZ: 'Number', maxZ: 'Number' },
+            returnType: 'Number',
+        },
+    },
+    {
+        source: voxelPoint,
+        settings: {
+            argumentTypes: { rayPos: 'Array(3)', rayDir: 'Array(3)', distance: 'Number' },
+            returnType: 'Array(3)',
+        },
+    },
+    {
+        source: voxelNormal,
+        settings: {
+            argumentTypes: { minX: 'Number', maxX: 'Number', minY: 'Number', maxY: 'Number', minZ: 'Number', maxZ: 'Number', point: 'Array(3)' },
             returnType: 'Array(3)',
         },
     },

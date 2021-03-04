@@ -27,10 +27,12 @@ export default class KernelManager {
             constants: {
                 ENTITY_COUNT: world.getEntities().length,
                 LIGHT_COUNT: world.getLights().length,
+                MESH_COUNT: world.getMeshes().length,
                 SPHERE: EntityType.SPHERE,
                 PLANE: EntityType.PLANE,
                 TRIANGLE: EntityType.TRIANGLE,
                 LIGHT: EntityType.LIGHT,
+                VOXEL: EntityType.VOXEL,
             },
         };
         return this.gpu.createKernel(Renderer.renderFunction, options as any);

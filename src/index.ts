@@ -14,6 +14,7 @@ import { Vector3 } from './model/util/vector';
 import Material from './model/material';
 import Light from './model/light';
 import ModelLoader from './app/model-loader';
+import Voxel from './model/entities/voxel';
 
 const inputManager = new InputManager();
 const gpu = new GPU();
@@ -62,12 +63,12 @@ const ground2 = new Triangle(
 );
 const pyramid1 = new Triangle(
     [
-        [1, 0, 0],
-        [1, 0, 1],
         [0.5, 0.75, 0.5],
+        [1, 0, 1],
+        [1, 0, 0],
     ],
     [0, 1, 0],
-    new Material([0.7, 0.69, 0.420]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
+    new Material([1, 0, 0]),
 );
 const pyramid2 = new Triangle(
     [
@@ -76,16 +77,16 @@ const pyramid2 = new Triangle(
         [0, 0, 1],
     ],
     [0, 1, 0],
-    new Material([0.420, 0.7, 0.69]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
+    new Material([0, 1, 0]),
 );
 const pyramid3 = new Triangle(
     [
         [0.5, 0.75, 0.5],
-        [0, 0, 0],
         [1, 0, 0],
+        [0, 0, 0],
     ],
     [0, 1, 0],
-    new Material([0.69, 0.420, 0.7]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
+    new Material([1, 0, 1]),
 );
 const pyramid4 = new Triangle(
     [
@@ -94,14 +95,19 @@ const pyramid4 = new Triangle(
         [1, 0, 1],
     ],
     [0, 1, 0],
-    new Material([0.3, 0.3, 0.721]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
+    new Material([1, 1, 0]),
+);
+const box = new Voxel(
+    1, 1, 1,
+    [ -1, 1, 0 ],
+    new Material([0.5, 0.5, 0.5]),
 );
 const light1 = new Light(
     [ 0, 15, -5 ],
     [ 0, 1, 0 ],
 );
 const light2 = new Light(
-    [ 10, 5, 20 ],
+    [ 10, 5, 10 ],
     [ 1, 0, 1 ],
 );
 
@@ -112,26 +118,30 @@ const camera = new Camera(
     [0, 0, -1], // Lookat
     Vector3.UP,
     90,
-    0.5,
+    2,
     -89,
     -45,
 );
 
 // TODO: Make this faster
-// const bunnyTriangles = await ModelLoader.loadModel('/bunny.obj');
+const bunnyMesh = await ModelLoader.loadModel('/bunny.obj');
 
 // Add entities to world
 world.addEntities(
     sphere1,
     sphere2,
-    grid,
+    // grid,
     ground1,
     ground2,
     pyramid1,
     pyramid2,
     pyramid3,
     pyramid4,
-    // ...bunnyTriangles, // Caution... this will be very slow
+    box,
+);
+
+world.addMesh(
+    bunnyMesh,
 );
 
 world.addLights(

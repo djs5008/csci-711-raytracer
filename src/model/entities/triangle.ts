@@ -4,6 +4,7 @@ import Material from '../material';
 import { addVec3, crossVec3, dotVec3, normalizeVec3, scaleVec3, subVec3, Vector3 } from '../util/vector';
 
 export default class Triangle extends PhysicalEntity {
+    public meshId : number;
     constructor(
         public vertices : Vector3[],
         public normal : Vector3,
@@ -19,6 +20,7 @@ export default class Triangle extends PhysicalEntity {
         }
         return [
             ...super.getPhysicalProperties(),
+            this.meshId,
             ...vertices,
         ];
     }

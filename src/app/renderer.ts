@@ -5,6 +5,7 @@ import Camera from '../model/camera';
 import { planeIntersect, planePoint } from '../model/entities/plane';
 import { sphereIntersect, sphereNormal, spherePoint } from '../model/entities/sphere';
 import { triangleIntersect, triangleNormal, trianglePoint } from '../model/entities/triangle';
+import { voxelIntersect, voxelNormal, voxelPoint } from '../model/entities/voxel';
 import Bounds from '../model/util/bounds';
 import { addVec3, Color, dotVec3, multiplyVec3, normalizeVec3, scaleVec3, subVec3, Vector2, Vector3 } from '../model/util/vector';
 
@@ -73,6 +74,7 @@ export default class Renderer {
             eyepointWorld : Vector3,
             entities      : any[][],
             lights        : any[][],
+            meshes        : any,
             N             : Vector3,
             U             : Vector3,
             V             : Vector3,
@@ -97,12 +99,11 @@ export default class Renderer {
             const w : number = viewport[0];
             const h : number = viewport[1];
             const yScale : number = aspectRatio * fovScale;
-            const invFocalLen : number = 1 / focalLen;
 
             // Calculate the Ray direction
             const { thread: { x, y } } = this; // x, y
-            const pX : Vector3 = scaleVec3(u, ((1 - (x / w) - 0.5) * fovScale) * invFocalLen);
-            const pY : Vector3 = scaleVec3(v, ((0 + (y / h) - 0.5) * yScale) * invFocalLen);
+            const pX : Vector3 = scaleVec3(u, ((1 - (x / w) - 0.5) * fovScale) * focalLen);
+            const pY : Vector3 = scaleVec3(v, ((0 + (y / h) - 0.5) * yScale) * focalLen);
             const rayDir = normalizeVec3(addVec3(addVec3(n, pX), pY));
 
             // Background Color
@@ -116,7 +117,6 @@ export default class Renderer {
             const E_CUST : number = BASE += 11; // Entity Custom Property Begin Index
 
             // Result Variables
-            let firstHit      : boolean  = true;            // Has not been hit?
             let color         : Color    = [ 0, 0, 0 ];     // Accumulated Color
             let accOpacity    : number   = 0;               // Accumulated Opacity
             let lastHitPos    : Vector3  = eye;
@@ -124,10 +124,59 @@ export default class Renderer {
             // Iterate until the accumulated opacity
             while (accOpacity < 1) {
                 const rayPos : Vector3 = lastHitPos;
+                let nearestEntityType     : number  = -1;
                 let nearestEntityIndex    : number  = -1;
                 let nearestEntityDistance : number  = MAX_INT;
                 let nearestEntityPoint    : Vector3 = [ 0, 0, 0 ];
                 let nearestEntityNormal   : Vector3 = [ 0, 0, 0 ];
+                // const nearestMeshId         : number  = -1;
+                // const nearestTriIndex       : number  = -1;
+
+                /* @ts-ignore */
+                // for (let m = 0; m < this.constants.MESH_COUNT; m++) {
+                //     const minX = meshes[m][0];
+                //     const maxX = meshes[m][1];
+                //     const minY = meshes[m][2];
+                //     const maxY = meshes[m][3];
+                //     const minZ = meshes[m][4];
+                //     const maxZ = meshes[m][5];
+                //     const meshDistance = boundsIntersect(rayPos, rayDir, minX, maxX, minY, maxY, minZ, maxZ);
+                //     if (meshDistance > 0) {
+                //         for (let t = 6; t < MAX_INT; t++) {
+                //             if (meshes[m][t] === -MAX_INT) break;
+
+                //             // Entity Information
+                //             const entityType    : number   =  meshes[m][t][E_TYPE];
+                //             // let meshId   = -1;
+                //             let distance = -1;
+                //             let point    = [ 0, 0, 0 ];
+                //             let normal   = [ 0, 0, 0 ];
+
+                //             // Retrieve Triangle Intersection Information
+                //             /* @ts-ignore */
+                //             if (entityType === this.constants.TRIANGLE) {
+                //                 // meshId = meshes[m][t][E_CUST+0];
+                //                 const v0 : Vector3 = [meshes[m][t][E_CUST+1], meshes[m][t][E_CUST+2], meshes[m][t][E_CUST+3]];
+                //                 const v1 : Vector3 = [meshes[m][t][E_CUST+4], meshes[m][t][E_CUST+5], meshes[m][t][E_CUST+6]];
+                //                 const v2 : Vector3 = [meshes[m][t][E_CUST+7], meshes[m][t][E_CUST+8], meshes[m][t][E_CUST+9]];
+                //                 distance = triangleIntersect(v0, v1, v2, rayPos, rayDir);
+                //                 point = trianglePoint(rayPos, rayDir, distance);
+                //                 normal = triangleNormal(v0, v1, v2);
+                //             }
+
+                //             // Check to see if we've hit an entity closer than the previously found entity
+                //             //  (if any)
+                //             if (distance > 0 && distance < nearestEntityDistance) {
+                //                 nearestMeshId         = m;
+                //                 nearestEntityDistance = distance;
+                //                 nearestEntityPoint    = point;
+                //                 nearestEntityNormal   = normal;
+                //                 nearestEntityType     = entityType;
+                //                 nearestTriIndex       = t;
+                //             }
+                //         }
+                //     }
+                // }
 
                 /* @ts-ignore */
                 for (let i = 0; i < this.constants.ENTITY_COUNT; i++) {
@@ -159,21 +208,36 @@ export default class Renderer {
                     // Retrieve Triangle Intersection Information
                     /* @ts-ignore */
                     else if (entityType === this.constants.TRIANGLE) {
-                        const v0 : Vector3 = [entities[i][E_CUST+0], entities[i][E_CUST+1], entities[i][E_CUST+2]];
-                        const v1 : Vector3 = [entities[i][E_CUST+3], entities[i][E_CUST+4], entities[i][E_CUST+5]];
-                        const v2 : Vector3 = [entities[i][E_CUST+6], entities[i][E_CUST+7], entities[i][E_CUST+8]];
+                        // const meshId : number = entities[i][E_CUST+0];
+                        const v0 : Vector3 = [entities[i][E_CUST+1], entities[i][E_CUST+2], entities[i][E_CUST+3]];
+                        const v1 : Vector3 = [entities[i][E_CUST+4], entities[i][E_CUST+5], entities[i][E_CUST+6]];
+                        const v2 : Vector3 = [entities[i][E_CUST+7], entities[i][E_CUST+8], entities[i][E_CUST+9]];
                         distance = triangleIntersect(v0, v1, v2, rayPos, rayDir);
                         point = trianglePoint(rayPos, rayDir, distance);
                         normal = triangleNormal(v0, v1, v2);
                     }
 
+                    /* @ts-ignore */
+                    else if (entityType === this.constants.VOXEL) {
+                        const minX = entities[i][E_CUST+0];
+                        const minY = entities[i][E_CUST+1];
+                        const minZ = entities[i][E_CUST+2];
+                        const maxX = entities[i][E_CUST+3];
+                        const maxY = entities[i][E_CUST+4];
+                        const maxZ = entities[i][E_CUST+5];
+                        distance = voxelIntersect(rayPos, rayDir, minX, maxX, minY, maxY, minZ, maxZ);
+                        point = voxelPoint(rayPos, rayDir, distance);
+                        normal = voxelNormal(minX, maxX, minY, maxY, minZ, maxZ, point);
+                    }
+
                     // Check to see if we've hit an entity closer than the previously found entity
-                    //  (if any)
+                    // (if any)
                     if (distance > 0 && distance < nearestEntityDistance) {
                         nearestEntityIndex = i;
                         nearestEntityDistance = distance;
                         nearestEntityPoint    = point;
                         nearestEntityNormal   = normal;
+                        nearestEntityType     = entityType;
                     }
                 }
 
@@ -184,29 +248,40 @@ export default class Renderer {
                     break;
                 } else {
                     // Material Properties
-                    // const nearestEntityMaterial = entities[nearestEntityIndex][E_MAT];
-                    const COLOR_DIFFUSE  : Color  = [entities[nearestEntityIndex][E_MAT + 0], entities[nearestEntityIndex][E_MAT + 1], entities[nearestEntityIndex][E_MAT + 2]] as Color;
-                    const COLOR_SPECULAR : Color  = [entities[nearestEntityIndex][E_MAT + 3], entities[nearestEntityIndex][E_MAT + 4], entities[nearestEntityIndex][E_MAT + 5]] as Color;
-                    const AMBIENT        : number = entities[nearestEntityIndex][E_MAT + 6];
-                    const DIFFUSE        : number = entities[nearestEntityIndex][E_MAT + 7];
-                    const SPECULAR       : number = entities[nearestEntityIndex][E_MAT + 8];
-                    const EXPONENT       : number = entities[nearestEntityIndex][E_MAT + 9];
-                    const OPACITY        : number = entities[nearestEntityIndex][E_MAT + 10];
+                    let COLOR_DIFFUSE  : Color  = [0, 0, 0];
+                    let COLOR_SPECULAR : Color  = [0, 0, 0];
+                    let AMBIENT        : number = -1;
+                    let DIFFUSE        : number = -1;
+                    let SPECULAR       : number = -1;
+                    let EXPONENT       : number = -1;
+                    let OPACITY        : number = -1;
+
+                    // if (nearestMeshId === -1) {
+                    COLOR_DIFFUSE  = [entities[nearestEntityIndex][E_MAT + 0], entities[nearestEntityIndex][E_MAT + 1], entities[nearestEntityIndex][E_MAT + 2]] as Color;
+                    COLOR_SPECULAR = [entities[nearestEntityIndex][E_MAT + 3], entities[nearestEntityIndex][E_MAT + 4], entities[nearestEntityIndex][E_MAT + 5]] as Color;
+                    AMBIENT        = entities[nearestEntityIndex][E_MAT + 6];
+                    DIFFUSE        = entities[nearestEntityIndex][E_MAT + 7];
+                    SPECULAR       = entities[nearestEntityIndex][E_MAT + 8];
+                    EXPONENT       = entities[nearestEntityIndex][E_MAT + 9];
+                    OPACITY        = entities[nearestEntityIndex][E_MAT + 10];
+                    // } else {
+                    // COLOR_DIFFUSE  = [meshes[nearestMeshId][nearestTriIndex][E_MAT + 0], meshes[nearestMeshId][nearestTriIndex][E_MAT + 1], meshes[nearestMeshId][nearestTriIndex][E_MAT + 2]] as Color;
+                    // COLOR_SPECULAR = [meshes[nearestMeshId][nearestTriIndex][E_MAT + 3], meshes[nearestMeshId][nearestTriIndex][E_MAT + 4], meshes[nearestMeshId][nearestTriIndex][E_MAT + 5]] as Color;
+                    // AMBIENT        = meshes[nearestMeshId][nearestTriIndex][E_MAT + 6];
+                    // DIFFUSE        = meshes[nearestMeshId][nearestTriIndex][E_MAT + 7];
+                    // SPECULAR       = meshes[nearestMeshId][nearestTriIndex][E_MAT + 8];
+                    // EXPONENT       = meshes[nearestMeshId][nearestTriIndex][E_MAT + 9];
+                    // OPACITY        = meshes[nearestMeshId][nearestTriIndex][E_MAT + 10];
+                    // }
 
                     // Amount of "opacity" left
                     const translucency : number = 1 - accOpacity;
-
-                    // Default the color if it's the first time being hit
-                    if (firstHit) {
-                        // color = COLOR_DIFFUSE;
-                        color = addVec3(color, COLOR_DIFFUSE); // initial color
-                    }
 
                     let diffuse   : Vector3 = [ 0, 0, 0 ];
                     let specular  : Vector3 = [ 0, 0, 0 ];
 
                     // @ts-ignore
-                    if (entities[nearestEntityIndex][E_TYPE] !== this.constants.LIGHT) {
+                    if (nearestEntityType !== this.constants.LIGHT) {
                         // @ts-ignore
                         for (let i = 0; i < this.constants.LIGHT_COUNT; i++) {
                             // Cast shadow ray
@@ -241,10 +316,22 @@ export default class Renderer {
                                 // Retrieve Triangle Intersection Information
                                 /* @ts-ignore */
                                 else if (entityType === this.constants.TRIANGLE) {
-                                    const v0 : Vector3 = [entities[i][E_CUST+0], entities[i][E_CUST+1], entities[i][E_CUST+2]];
-                                    const v1 : Vector3 = [entities[i][E_CUST+3], entities[i][E_CUST+4], entities[i][E_CUST+5]];
-                                    const v2 : Vector3 = [entities[i][E_CUST+6], entities[i][E_CUST+7], entities[i][E_CUST+8]];
+                                    const v0 : Vector3 = [entities[i][E_CUST+1], entities[i][E_CUST+2], entities[i][E_CUST+3]];
+                                    const v1 : Vector3 = [entities[i][E_CUST+4], entities[i][E_CUST+5], entities[i][E_CUST+6]];
+                                    const v2 : Vector3 = [entities[i][E_CUST+7], entities[i][E_CUST+8], entities[i][E_CUST+9]];
                                     distance = triangleIntersect(v0, v1, v2, rayPos, rayDir);
+                                }
+
+                                // Retrieve Voxel Intersection Information
+                                /* @ts-ignore */
+                                else if (entityType === this.constants.VOXEL) {
+                                    const minX = entities[i][E_CUST+0];
+                                    const minY = entities[i][E_CUST+1];
+                                    const minZ = entities[i][E_CUST+2];
+                                    const maxX = entities[i][E_CUST+3];
+                                    const maxY = entities[i][E_CUST+4];
+                                    const maxZ = entities[i][E_CUST+5];
+                                    distance = voxelIntersect(rayPos, rayDir, minX, maxX, minY, maxY, minZ, maxZ);
                                 }
 
                                 // Check to see if we've hit an entity closer than the previously found entity
@@ -262,22 +349,22 @@ export default class Renderer {
                                 diffuse = addVec3(diffuse, multiplyVec3(lightColor, scaleVec3(COLOR_DIFFUSE, dotVec3(S, normal))));
                             }
                         }
+
+                        color = addVec3(color, scaleVec3(COLOR_DIFFUSE, AMBIENT));
+                        color = addVec3(color, scaleVec3(diffuse, DIFFUSE));
+                        color = addVec3(color, scaleVec3(specular, SPECULAR));
                     } else {
                         color = COLOR_DIFFUSE;
                     }
 
                     // Add the current color (and previous colors) to the "discovered" color.
                     color = scaleVec3(color, OPACITY * translucency);
-                    color = addVec3(color, scaleVec3(color, AMBIENT));
-                    color = addVec3(color, scaleVec3(diffuse, DIFFUSE));
-                    color = addVec3(color, scaleVec3(specular, SPECULAR));
 
                     // Move the "hit" vector forward to the hit location.
                     lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (1 + EPSILON)));
 
                     // Increase the amount of accumulated opacity hit
                     accOpacity += ((translucency) * OPACITY);
-                    firstHit = false;
                 }
             }
 

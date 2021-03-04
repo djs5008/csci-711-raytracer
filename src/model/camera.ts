@@ -11,6 +11,7 @@ interface ISceneProperties {
     eyepointWorld : Vector3;
     entities : number[][];
     lights : number[][];
+    meshes : number[][];
     N : Vector3;
     U : Vector3;
     V : Vector3;
@@ -29,6 +30,7 @@ class Camera extends Entity {
 
     private entities : number[][];
     private lights   : number[][];
+    private meshes   : number[][];
 
     constructor(
         private world : World,
@@ -53,6 +55,7 @@ class Camera extends Entity {
         const eyepoint : Vector3 = this.position;
         this.lights     = (this.lights || this.world.getLights());
         this.entities   = (this.entities || this.world.getEntities());
+        this.meshes     = (this.meshes || this.world.getMeshes());
         const N : Vector3 = normalizeVec3(this.lookAt);
         const U : Vector3 = normalizeVec3(crossVec3(N, Vector3.UP));
         const V : Vector3 = normalizeVec3(crossVec3(U, N));
@@ -74,6 +77,7 @@ class Camera extends Entity {
             eyepointWorld: [0, 0, 0],
             entities: this.entities,
             lights: this.lights,
+            meshes: this.meshes,
             N, U, V,
             aspectRatio,
             fovScale,
@@ -89,6 +93,7 @@ class Camera extends Entity {
             eyepointWorld,
             entities,
             lights,
+            meshes,
             N, U, V,
             aspectRatio,
             fovScale,
@@ -100,6 +105,7 @@ class Camera extends Entity {
             eyepointWorld,
             entities,
             lights,
+            meshes,
             N, U, V,
             aspectRatio,
             fovScale,

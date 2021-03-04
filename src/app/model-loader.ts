@@ -1,12 +1,24 @@
+import Mesh from '../model/entities/mesh';
 import Triangle from '../model/entities/triangle';
-import Entity from '../model/entity';
 import Material from '../model/material';
 
 export default class ModelLoader {
-    public static async loadModel(url : string) : Promise<Array<Entity>> {
+    /**
+     * Load an obj model
+     * @param {string} url The url of the model
+     */
+    public static async loadModel(url : string) : Promise<Mesh> {
         const response = await fetch(url);
         const text = await response.text();
-        return this.parseOBJ(text);
+        const s = 5;
+        const mesh = new Mesh(this.parseOBJ(text), new Material())
+            .transform([
+                s, 0, 0, 0,
+                0, s, 0, 0,
+                0, 0, s, 0,
+                0, 0, 0, 1,
+            ]);
+        return mesh;
     }
 
     /**
@@ -15,8 +27,8 @@ export default class ModelLoader {
      * @param {string} data The obj data being parsed
      * @return {Array<Triangle>} resulting triangles
      */
-    private static parseOBJ(data : string) {
-        const result : Array<Entity> = [];
+    private static parseOBJ(data : string) : Array<Triangle> {
+        const result : Array<Triangle> = [];
 
         // because indices are base 1 let's just fill in the 0th data
         const objPositions = [[0, 0, 0]];
