@@ -46,7 +46,7 @@ class Camera extends Entity {
         super(null, position);
         this.yaw = 0;
         this.pitch = 0;
-        // this.lookAt = [0, 0, 1];
+        this.lookAt = [0, 0, 1];
         this.rotate(yaw, pitch);
     }
 

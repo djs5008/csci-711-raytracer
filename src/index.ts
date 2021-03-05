@@ -106,20 +106,20 @@ const light1 = new Light(
     [ 0, 1, 0 ],
 );
 const light2 = new Light(
-    [ 10, 5, 10 ],
+    [ 15, 5, 10 ],
     [ 1, 0, 1 ],
 );
 
 const camera = new Camera(
     world,
     renderer.resolution, // Viewport
-    [-0.02, 0.175, 0.2], // Position
+    [0, 2.3, -1], // Position
     [0, 0, -1], // Lookat
     Vector3.UP,
     90,
     2,
-    -89,
-    -45,
+    90,
+    -20,
 );
 
 // TODO: Make this faster
@@ -132,11 +132,11 @@ world.addEntities(
     // grid,
     ground1,
     ground2,
-    pyramid1,
-    pyramid2,
-    pyramid3,
-    pyramid4,
-    box,
+    // pyramid1,
+    // pyramid2,
+    // pyramid3,
+    // pyramid4,
+    // box,
 );
 
 world.addMesh(
