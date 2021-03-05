@@ -53,8 +53,8 @@ class Camera extends Entity {
     private setupSceneProperties() : void {
         const viewport : Vector2 = [this.viewport.w, this.viewport.h];
         const eyepoint : Vector3 = this.position;
-        this.lights     = (this.lights || this.world.getLights());
-        this.entities   = (this.entities || this.world.getEntities());
+        this.lights     = this.world.getLights();
+        this.entities   = this.world.getEntities();
         this.meshes     = (this.meshes || this.world.getMeshes());
         const N : Vector3 = normalizeVec3(this.lookAt);
         const U : Vector3 = normalizeVec3(crossVec3(N, Vector3.UP));
@@ -64,13 +64,6 @@ class Camera extends Entity {
         const focalLen : number = this.focalLen;
         if (!this.aspectRatio) this.aspectRatio = aspectRatio;
         if (!this.fovScale) this.fovScale = fovScale;
-        // const cam2world : Matrix4 = [
-        //     U[0], V[0], N[0], 0,
-        //     U[1], V[1], N[1], 0,
-        //     U[2], V[2], N[2], 0,
-        //     -dotVec3(eyepoint, U), -dotVec3(eyepoint, V), -dotVec3(eyepoint, N), 1,
-        // ];
-        // const eyepointWorld : Vector3 = transformM4(this.position, cam2world);
         this.sceneProperties = {
             viewport,
             eyepoint,

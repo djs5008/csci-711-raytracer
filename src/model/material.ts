@@ -9,6 +9,7 @@ export default class Material {
         public specular : number = 0.5, // kS
         public exponent : number = 5, // kE
         public opacity  : number = 1.0, // Opacity
+        public toon     : number = 0,
     ) {
         if (diffuse + specular > 1) {
             throw new Error('ERROR: Diffuse (kD) + Specular (kS) cannot exceed 1.0!');
@@ -50,6 +51,11 @@ export default class Material {
         return this;
     }
 
+    public setToon(bool : boolean) : Material {
+        this.toon = Number(bool);
+        return this;
+    }
+
     public toArray() : number[] {
         return [
             ...this.diffuseColor,
@@ -59,6 +65,7 @@ export default class Material {
             this.specular,
             this.exponent,
             this.opacity,
+            this.toon,
         ];
     }
 }

@@ -29,6 +29,45 @@
                     <li>Scroll - Forward / Backward</li>
                 </ul>
             </div>
+            <div class="settings-wrapper">
+                <h3>Settings</h3>
+                <div class="settings">
+                    <div>
+                        <ul>
+                            <li>
+                                Shader:
+                                <ul style="list-style: none;margin-left:-2rem;">
+                                    <li>
+                                        <input name="shader" id="phong" type="radio" checked data-shader="phong" onchange="settingsManager.setShader(event);"/>
+                                        <label for="phong">Phong</label>
+                                    </li>
+                                    <li>
+                                        <input name="shader" id="toon" type="radio" data-shader="toon" onchange="settingsManager.setShader(event);" />
+                                        <label for="toon">Toon</label>
+                                    </li>
+                                </li>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <ul>
+                            Lights:
+                            <ul style="list-style: none;margin-left:-2rem;vertical-align:middle;">
+                                <li>
+                                    <input id="light1on" type="checkbox" checked data-light-index="0" onchange="settingsManager.toggleLight(event);" />
+                                    <input id="light1color" type="color" value="#00FF00" data-light-index="0" onchange="settingsManager.changeLightColor(event);" />
+                                    <label for="light1on">Light1</label>
+                                </li>
+                                <li>
+                                    <input id="light2on" type="checkbox" checked data-light-index="1" onchange="settingsManager.toggleLight(event);" />
+                                    <input id="light2color" type="color" value="#FF00FF" data-light-index="1" onchange="settingsManager.changeLightColor(event);" />
+                                    <label for="light2on">Light2</label>
+                                </li>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </body>
 </html>

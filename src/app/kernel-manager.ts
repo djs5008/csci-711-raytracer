@@ -3,6 +3,7 @@ import { GPU, IKernelRunShortcut } from 'gpu.js';
 import Camera from '../model/camera';
 import { EntityType } from '../model/entity';
 import { intersectFunctions } from '../model/util/intersect';
+import { mathFunctions } from '../model/util/math';
 import { vectorFunctions } from '../model/util/vector';
 import World from '../model/world';
 import Renderer from './renderer';
@@ -11,7 +12,7 @@ export default class KernelManager {
     constructor(
         private gpu : GPU,
     ) {
-        [ ...vectorFunctions, ...intersectFunctions ]
+        [ ...vectorFunctions, ...intersectFunctions, ...mathFunctions ]
             .forEach((def) => gpu.addFunction(def.source as any, def.settings as any));
     }
 

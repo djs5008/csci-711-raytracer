@@ -28,6 +28,10 @@ canvas {
     margin: 2px 0;
 }
 
+.settings {
+    display: inline-flex;
+}
+
 #draw-container {
     position: relative;
 }

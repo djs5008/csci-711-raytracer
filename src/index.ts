@@ -20,7 +20,6 @@ const inputManager = new InputManager();
 const gpu = new GPU();
 const kernelManager = new KernelManager(gpu);
 const renderer = new Renderer();
-new SettingsManager(renderer);
 
 // Create the world
 const world = new World();
@@ -163,6 +162,8 @@ renderer.setCamera(camera);
 renderer.setGPUKernel(gpuKernel);
 inputManager.setRenderer(renderer);
 document.getElementById('draw-container').appendChild(gpuKernel.canvas);
+
+(<any> window).settingsManager = new SettingsManager(renderer, [ sphere1, sphere2 ], [ light1, light2 ]);
 
 // Render from Camera
 const draw = () => {
