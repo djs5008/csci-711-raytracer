@@ -1,7 +1,7 @@
 import { voxelIntersect, voxelNormal, voxelPoint } from '../entities/voxel';
 import { planeIntersect, planePoint } from '../entities/plane';
 import { sphereIntersect, sphereNormal, spherePoint } from '../entities/sphere';
-import { triangleIntersect, triangleNormal, trianglePoint } from '../entities/triangle';
+import { triangleBary, triangleIntersect, triangleNormal, trianglePoint } from '../entities/triangle';
 
 export const intersectFunctions = [
     {
@@ -78,6 +78,13 @@ export const intersectFunctions = [
         source: voxelNormal,
         settings: {
             argumentTypes: { minX: 'Number', maxX: 'Number', minY: 'Number', maxY: 'Number', minZ: 'Number', maxZ: 'Number', point: 'Array(3)' },
+            returnType: 'Array(3)',
+        },
+    },
+    {
+        source: triangleBary,
+        settings: {
+            argumentTypes: { point: 'Array(3)', vertex0: 'Array(3)', vertex1: 'Array(3)', vertex2: 'Array(3)' },
             returnType: 'Array(3)',
         },
     },

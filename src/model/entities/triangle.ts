@@ -74,3 +74,24 @@ export function triangleNormal(
     const edge2 = subVec3(vertex2, vertex0);
     return normalizeVec3(crossVec3(edge2, edge1));
 }
+
+export function triangleBary(
+    point   : Vector3,
+    vertex0 : Vector3,
+    vertex1 : Vector3,
+    vertex2 : Vector3,
+) : Vector3 {
+    const v0 = subVec3(vertex1, vertex0);
+    const v1 = subVec3(vertex2, vertex0);
+    const v2 = subVec3(point, vertex0);
+    const d00 = dotVec3(v0, v0);
+    const d01 = dotVec3(v0, v1);
+    const d11 = dotVec3(v1, v1);
+    const d20 = dotVec3(v2, v0);
+    const d21 = dotVec3(v2, v1);
+    const denom = d00 * d11 - d01 * d01;
+    const v = (d11 * d20 - d01 * d21) / denom;
+    const w = (d00 * d21 - d01 * d20) / denom;
+    const u = 1.0 - v - w;
+    return [ u, v, w ];
+}

@@ -10,5 +10,7 @@ export default abstract class Entity {
         public type : EntityType,
         public position : Vector3,
         public material : Material = new Material(),
+        public textureId : number  = -1,
+        public texOffset : Vector3 = [ 0, 0, 0 ],
     ) { }
 }

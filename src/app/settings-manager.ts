@@ -1,5 +1,6 @@
 import Entity from '../model/entity';
 import Light from '../model/light';
+import Checkerboard from '../model/textures/checkerboard';
 import Bounds from '../model/util/bounds';
 import Renderer from './renderer';
 
@@ -8,6 +9,7 @@ export default class SettingsManager {
         private renderer : Renderer,
         private toonShadableEntities : Array<Entity>,
         private lights : Array<Light>,
+        private texture : Checkerboard,
         private widthInput : HTMLInputElement = <HTMLInputElement> document.getElementById('res-w'),
         private heightInput : HTMLInputElement = <HTMLInputElement> document.getElementById('res-h'),
         private fullscreenBtn : HTMLButtonElement = <HTMLButtonElement> document.getElementById('fullscreen'),
@@ -49,6 +51,19 @@ export default class SettingsManager {
         const { lightIndex } = (<HTMLInputElement> event.currentTarget).dataset;
         const rgb = this.hexToRgb((<HTMLInputElement> event.currentTarget).value);
         this.lights[parseInt(lightIndex)].color = [ rgb.r, rgb.g, rgb.b ];
+        this.updateCanvas();
+    }
+
+    changeTextureColor(event : InputEvent) {
+        const { colorIndex } = (<HTMLInputElement> event.currentTarget).dataset;
+        const rgb = this.hexToRgb((<HTMLInputElement> event.currentTarget).value);
+        if (parseInt(colorIndex) === 0) {
+            this.texture.color1 = [ rgb.r, rgb.g, rgb.b ];
+        } else {
+            this.texture.color2 = [ rgb.r, rgb.g, rgb.b ];
+        }
+        this.texture.reserialize();
+        this.texture.generateCheckerboard();
         this.updateCanvas();
     }
 

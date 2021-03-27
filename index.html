@@ -5,6 +5,7 @@
         <title>Raytracer</title>
     </head>
     <body>
+        <img src="/nicolas-cage2.jpg" id="example-texture" style="display:none;" />
         <div id="draw-container">
             <div id="fps-counter"></div>
         </div>
@@ -31,7 +32,7 @@
             </div>
             <div class="settings-wrapper">
                 <h3>Settings</h3>
-                <div class="settings">
+                <div class="settings-shading">
                     <div>
                         <ul>
                             <li>
@@ -62,6 +63,21 @@
                                     <input id="light2on" type="checkbox" checked data-light-index="1" onchange="settingsManager.toggleLight(event);" />
                                     <input id="light2color" type="color" value="#FF00FF" data-light-index="1" onchange="settingsManager.changeLightColor(event);" />
                                     <label for="light2on">Light2</label>
+                                </li>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <ul>
+                            Texture:
+                            <ul style="list-style: none;margin-left:-2rem;vertical-align:middle;">
+                                <li>
+                                    <input id="check1color" type="color" value="#FF0000" data-color-index="0" onchange="settingsManager.changeTextureColor(event);" />
+                                    <label for="check1color">Check Color 1</label>
+                                </li>
+                                <li>
+                                    <input id="check2color" type="color" value="#FFFF00" data-color-index="1" onchange="settingsManager.changeTextureColor(event);" />
+                                    <label for="check2color">Check Color 2</label>
                                 </li>
                             </li>
                         </ul>

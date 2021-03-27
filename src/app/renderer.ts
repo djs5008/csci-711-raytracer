@@ -8,7 +8,7 @@ import { triangleIntersect, triangleNormal, trianglePoint } from '../model/entit
 import { voxelIntersect, voxelNormal, voxelPoint } from '../model/entities/voxel';
 import Bounds from '../model/util/bounds';
 import { smoothStepVal } from '../model/util/math';
-import { addVec3, Color, dotVec3, multiplyVec3, normalizeVec3, scaleVec3, subVec3, Vector2, Vector3 } from '../model/util/vector';
+import { addVec3, Color, crossVec3, dotVec3, multiplyVec3, normalizeVec3, scaleVec3, subVec3, Vector2, Vector3 } from '../model/util/vector';
 
 export default class Renderer {
     public static readonly DEFAULT_RESOLUTION = new Bounds(1920, 1080);
@@ -76,6 +76,7 @@ export default class Renderer {
             entities      : any[][],
             lights        : any[][],
             meshes        : any,
+            textures      : any,
             N             : Vector3,
             U             : Vector3,
             V             : Vector3,
@@ -111,11 +112,14 @@ export default class Renderer {
             const BG_COLOR : Vector3 = [0.25, 0.6, 1];
 
             // Define the indexes of physical entity properties
-            let   BASE   : number = 0;
-            const E_TYPE : number = BASE += 0;  // Entity Type
-            const E_POS  : number = BASE += 1;  // Entity Position
-            const E_MAT  : number = BASE += 3;  // Entity Material (Color)
-            const E_CUST : number = BASE += 12; // Entity Custom Property Begin Index
+            let   BASE    : number = 0;
+            const E_TYPE  : number = BASE += 0;  // Entity Type
+            const E_TEX   : number = BASE += 1;  // Entity Texture
+            const E_TEX_X : number = BASE += 1;  // Entity Texture
+            const E_TEX_Y : number = BASE += 1;  // Entity Texture
+            const E_POS   : number = BASE += 1;  // Entity Position
+            const E_MAT   : number = BASE += 3;  // Entity Material (Color)
+            const E_CUST  : number = BASE += 12; // Entity Custom Property Begin Index
 
             // Result Variables
             let color         : Color    = [ 0, 0, 0 ];     // Accumulated Color
@@ -130,54 +134,7 @@ export default class Renderer {
                 let nearestEntityDistance : number  = MAX_INT;
                 let nearestEntityPoint    : Vector3 = [ 0, 0, 0 ];
                 let nearestEntityNormal   : Vector3 = [ 0, 0, 0 ];
-                // const nearestMeshId         : number  = -1;
-                // const nearestTriIndex       : number  = -1;
-
-                /* @ts-ignore */
-                // for (let m = 0; m < this.constants.MESH_COUNT; m++) {
-                //     const minX = meshes[m][0];
-                //     const maxX = meshes[m][1];
-                //     const minY = meshes[m][2];
-                //     const maxY = meshes[m][3];
-                //     const minZ = meshes[m][4];
-                //     const maxZ = meshes[m][5];
-                //     const meshDistance = boundsIntersect(rayPos, rayDir, minX, maxX, minY, maxY, minZ, maxZ);
-                //     if (meshDistance > 0) {
-                //         for (let t = 6; t < MAX_INT; t++) {
-                //             if (meshes[m][t] === -MAX_INT) break;
-
-                //             // Entity Information
-                //             const entityType    : number   =  meshes[m][t][E_TYPE];
-                //             // let meshId   = -1;
-                //             let distance = -1;
-                //             let point    = [ 0, 0, 0 ];
-                //             let normal   = [ 0, 0, 0 ];
-
-                //             // Retrieve Triangle Intersection Information
-                //             /* @ts-ignore */
-                //             if (entityType === this.constants.TRIANGLE) {
-                //                 // meshId = meshes[m][t][E_CUST+0];
-                //                 const v0 : Vector3 = [meshes[m][t][E_CUST+1], meshes[m][t][E_CUST+2], meshes[m][t][E_CUST+3]];
-                //                 const v1 : Vector3 = [meshes[m][t][E_CUST+4], meshes[m][t][E_CUST+5], meshes[m][t][E_CUST+6]];
-                //                 const v2 : Vector3 = [meshes[m][t][E_CUST+7], meshes[m][t][E_CUST+8], meshes[m][t][E_CUST+9]];
-                //                 distance = triangleIntersect(v0, v1, v2, rayPos, rayDir);
-                //                 point = trianglePoint(rayPos, rayDir, distance);
-                //                 normal = triangleNormal(v0, v1, v2);
-                //             }
-
-                //             // Check to see if we've hit an entity closer than the previously found entity
-                //             //  (if any)
-                //             if (distance > 0 && distance < nearestEntityDistance) {
-                //                 nearestMeshId         = m;
-                //                 nearestEntityDistance = distance;
-                //                 nearestEntityPoint    = point;
-                //                 nearestEntityNormal   = normal;
-                //                 nearestEntityType     = entityType;
-                //                 nearestTriIndex       = t;
-                //             }
-                //         }
-                //     }
-                // }
+                let nearestEntityUV       : Vector3 = [ 0, 0, 0 ];
 
                 /* @ts-ignore */
                 for (let i = 0; i < this.constants.ENTITY_COUNT; i++) {
@@ -187,6 +144,7 @@ export default class Renderer {
                     let distance = -1;
                     let point    = [ 0, 0, 0 ];
                     let normal   = [ 0, 0, 0 ];
+                    let uv       = [ 0, 0, 0 ];
 
                     // Retrieve Sphere Intersection Information
                     /* @ts-ignore */
@@ -195,7 +153,6 @@ export default class Renderer {
                         distance = sphereIntersect(entityPos, radius, rayPos, rayDir);
                         point = spherePoint(rayPos, rayDir, distance);
                         normal = sphereNormal(entityPos, rayPos, rayDir, distance);
-                        // hitEdge = ((distance - radius) <= 0.5) ? 1 : 0;
                     }
 
                     // Retrieve Plane Intersection Information
@@ -217,6 +174,11 @@ export default class Renderer {
                         distance = triangleIntersect(v0, v1, v2, rayPos, rayDir);
                         point = trianglePoint(rayPos, rayDir, distance);
                         normal = triangleNormal(v0, v1, v2);
+
+                        const u = dotVec3(normal, crossVec3(subVec3(v2, v1), subVec3(point, v1))) / dotVec3(normal, normal);
+                        const v = dotVec3(normal, crossVec3(subVec3(v0, v2), subVec3(point, v2))) / dotVec3(normal, normal);
+                        const w = 1 - u - v;
+                        uv = addVec3(addVec3(scaleVec3(v0, u), scaleVec3(v1, v)), scaleVec3(v2, w));
                     }
 
                     /* @ts-ignore */
@@ -240,6 +202,7 @@ export default class Renderer {
                         nearestEntityPoint    = point;
                         nearestEntityNormal   = normal;
                         nearestEntityType     = entityType;
+                        nearestEntityUV       = uv;
                     }
                 }
 
@@ -259,7 +222,6 @@ export default class Renderer {
                     let OPACITY        : number = -1;
                     let USE_TOON       : number = 0;
 
-                    // if (nearestMeshId === -1) {
                     COLOR_DIFFUSE  = [entities[nearestEntityIndex][E_MAT + 0], entities[nearestEntityIndex][E_MAT + 1], entities[nearestEntityIndex][E_MAT + 2]] as Color;
                     COLOR_SPECULAR = [entities[nearestEntityIndex][E_MAT + 3], entities[nearestEntityIndex][E_MAT + 4], entities[nearestEntityIndex][E_MAT + 5]] as Color;
                     AMBIENT        = entities[nearestEntityIndex][E_MAT + 6];
@@ -268,15 +230,6 @@ export default class Renderer {
                     EXPONENT       = entities[nearestEntityIndex][E_MAT + 9];
                     OPACITY        = entities[nearestEntityIndex][E_MAT + 10];
                     USE_TOON       = entities[nearestEntityIndex][E_MAT + 11];
-                    // } else {
-                    // COLOR_DIFFUSE  = [meshes[nearestMeshId][nearestTriIndex][E_MAT + 0], meshes[nearestMeshId][nearestTriIndex][E_MAT + 1], meshes[nearestMeshId][nearestTriIndex][E_MAT + 2]] as Color;
-                    // COLOR_SPECULAR = [meshes[nearestMeshId][nearestTriIndex][E_MAT + 3], meshes[nearestMeshId][nearestTriIndex][E_MAT + 4], meshes[nearestMeshId][nearestTriIndex][E_MAT + 5]] as Color;
-                    // AMBIENT        = meshes[nearestMeshId][nearestTriIndex][E_MAT + 6];
-                    // DIFFUSE        = meshes[nearestMeshId][nearestTriIndex][E_MAT + 7];
-                    // SPECULAR       = meshes[nearestMeshId][nearestTriIndex][E_MAT + 8];
-                    // EXPONENT       = meshes[nearestMeshId][nearestTriIndex][E_MAT + 9];
-                    // OPACITY        = meshes[nearestMeshId][nearestTriIndex][E_MAT + 10];
-                    // }
 
                     // Amount of "opacity" left
                     const translucency : number = 1 - accOpacity;
@@ -287,6 +240,24 @@ export default class Renderer {
 
                     // @ts-ignore
                     if (nearestEntityType !== this.constants.LIGHT) {
+                        // Check if there is a texture
+                        const texId = entities[nearestEntityIndex][E_TEX];
+                        if (texId >= 0) {
+                            const texScale = 150;
+                            const tWidth  = textures[texId][0] * texScale;
+                            const tHeight = textures[texId][1] * texScale;
+                            const pX = (nearestEntityUV[2] + entities[nearestEntityIndex][E_TEX_X]);
+                            const pZ = (nearestEntityUV[0] + entities[nearestEntityIndex][E_TEX_Y]);
+
+                            const tX = Math.floor(Math.abs((pX % tWidth)  / texScale));
+                            const tY = Math.floor(Math.abs((pZ % tHeight) / texScale));
+                            const colorIndex = ((tX + (tY * (tWidth/texScale))) * 3) + 2;
+                            color = [
+                                textures[texId][colorIndex + 0],
+                                textures[texId][colorIndex + 1],
+                                textures[texId][colorIndex + 2],
+                            ];
+                        }
                         // @ts-ignore
                         for (let i = 0; i < this.constants.LIGHT_COUNT; i++) {
                             const LIGHT_TOGGLE = lights[i][7];
@@ -376,7 +347,7 @@ export default class Renderer {
                     }
 
                     // Add the current color (and previous colors) to the "discovered" color.
-                    color = scaleVec3(color, OPACITY * translucency);
+                    // color = scaleVec3(color, OPACITY * translucency);
 
                     // Move the "hit" vector forward to the hit location.
                     lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (1 + EPSILON)));
