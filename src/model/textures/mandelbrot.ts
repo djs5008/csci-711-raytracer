@@ -1,27 +1,29 @@
 import Texture from '../texture';
-import { hsvToRgb } from '../util/color';
+import * as convert from 'color-convert';
 
-const MAX_ITER = 250;
-const WIDTH = 500;
-const HEIGHT = 400;
+const MAX_ITER = 500;
+const WIDTH = 100;
+const HEIGHT = 80;
 
 export default class MandelbrotTexture extends Texture {
-    constructor() {
-        super(WIDTH, HEIGHT);
+    constructor(
+        public scale : number = 1.0,
+    ) {
+        super(WIDTH, HEIGHT, scale);
         for (let row = 0; row < HEIGHT; row++) {
             for (let col = 0; col < WIDTH; col++) {
                 const c1 = (col - WIDTH / 2.0) * 4.0 / WIDTH;
                 const c2 = (row - HEIGHT/ 2.0) * 4.0 / WIDTH;
                 const n = this.mandelbrot(c1, c2);
-                const h = ((n / MAX_ITER)*360);
+                const h = Math.floor((n / MAX_ITER)*360);
                 const s = 100;
-                const b = (n < MAX_ITER) ? 100 : 0;
-                const clr = hsvToRgb(h, s, b);
+                const l = (n < MAX_ITER) ? 50 : 0;
+                const clr = convert.hsl.rgb([h, s, l]);
                 this.texels.push(
                     [
-                        clr.r/255,
-                        clr.g/255,
-                        clr.b/255,
+                        clr[0]/255,
+                        clr[1]/255,
+                        clr[2]/255,
                     ],
                 );
             }

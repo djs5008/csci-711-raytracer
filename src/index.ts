@@ -6,19 +6,19 @@ import Renderer from './app/renderer';
 import Camera from './model/camera';
 import Plane from './model/entities/plane';
 import Sphere from './model/entities/sphere';
-import Triangle, { triangleBary } from './model/entities/triangle';
+import Triangle from './model/entities/triangle';
 import World from './model/world';
 import SettingsManager from './app/settings-manager';
 import KernelManager from './app/kernel-manager';
-import { addVec3, scaleVec3, Vector3 } from './model/util/vector';
+import { Vector3 } from './model/util/vector';
 import Material from './model/material';
 import Light from './model/light';
 import ModelLoader from './app/model-loader';
 import Voxel from './model/entities/voxel';
 import Checkerboard from './model/textures/checkerboard';
-import Texture from './model/texture';
 import ImageTexture from './model/textures/image-texture';
 import MandelbrotTexture from './model/textures/mandelbrot';
+import * as convert from 'color-convert';
 
 const inputManager = new InputManager();
 const gpu = new GPU();
@@ -126,9 +126,9 @@ const camera = new Camera(
     -20,
 );
 
-const chkr = new Checkerboard([1, 0, 0], [1, 1, 0], 1);
-ground1.textureId = 0; // Set ground1 to checker texture
-ground2.textureId = 0; // Set ground2 to checker texture
+const chkr = new Checkerboard([1, 0, 0], [1, 1, 0], 1, 2, 150);
+ground1.textureId = 1; // Set ground1 to checker texture
+ground2.textureId = 1; // Set ground2 to checker texture
 
 // Image Texture
 // const img = <HTMLImageElement> document.getElementById('example-texture');
@@ -141,7 +141,7 @@ ground2.textureId = 0; // Set ground2 to checker texture
 // const imgTex = new ImageTexture(imageData);
 
 // Mandelbrot Texture
-// const mandelbrotTex = new MandelbrotTexture();
+const mandelbrotTex = new MandelbrotTexture(16);
 
 // TODO: Make this faster
 const bunnyMesh = await ModelLoader.loadModel('/bunny.obj');
@@ -174,6 +174,7 @@ world.addCameras(
 );
 
 world.addTextures(
+    mandelbrotTex,
     chkr,
 );
 

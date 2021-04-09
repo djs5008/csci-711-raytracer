@@ -5,13 +5,14 @@ export default class Texture {
     private serializedTexture : Array<any> = null;
 
     constructor(
-        public width : number,
+        public width  : number,
         public height : number,
+        public scale  : number = 1.0,
     ) { }
 
     public serialize() : any {
         if (this.serializedTexture == null) {
-            const base = [ this.width, this.height ];
+            const base = [ this.width, this.height, this.scale ];
             for (let i = 0; i < this.texels.length; i++) {
                 base.push(this.texels[i][0], this.texels[i][1], this.texels[i][2]);
             }

@@ -243,20 +243,21 @@ export default class Renderer {
                         // Check if there is a texture
                         const texId = entities[nearestEntityIndex][E_TEX];
                         if (texId >= 0) {
-                            const texScale = 150;
-                            const tWidth  = textures[texId][0] * texScale;
-                            const tHeight = textures[texId][1] * texScale;
+                            const HEADER_LENGTH = 3;
+                            const texScale = textures[texId][2];
+                            const tWidth   = textures[texId][0] * texScale;
+                            const tHeight  = textures[texId][1] * texScale;
                             const pX = (nearestEntityUV[2] + entities[nearestEntityIndex][E_TEX_X]);
                             const pZ = (nearestEntityUV[0] + entities[nearestEntityIndex][E_TEX_Y]);
 
                             const tX = Math.floor(Math.abs((pX % tWidth)  / texScale));
                             const tY = Math.floor(Math.abs((pZ % tHeight) / texScale));
-                            const colorIndex = ((tX + (tY * (tWidth/texScale))) * 3) + 2;
-                            color = [
+                            const colorIndex = ((tX + (tY * (tWidth/texScale))) * 3) + HEADER_LENGTH;
+                            color = addVec3(color, [
                                 textures[texId][colorIndex + 0],
                                 textures[texId][colorIndex + 1],
                                 textures[texId][colorIndex + 2],
-                            ];
+                            ]);
                         }
                         // @ts-ignore
                         for (let i = 0; i < this.constants.LIGHT_COUNT; i++) {
@@ -330,6 +331,8 @@ export default class Renderer {
                                     diffuse = addVec3(diffuse, multiplyVec3(lightColor, scaleVec3(COLOR_DIFFUSE, dotVec3(S, normal))));
                                     specular = addVec3(specular, multiplyVec3(lightColor, scaleVec3(COLOR_SPECULAR, Math.max(0, dotVec3(VD, reflect)) ** EXPONENT)));
                                 }
+                            } else {
+                                color = scaleVec3(color, 0.5);
                             }
                             if (USE_TOON === 1) {
                                 rim = smoothStepVal(0.706, 0.726, 1-dotVec3(VD, normal));
@@ -338,7 +341,8 @@ export default class Renderer {
                         if (USE_TOON === 1 && rim > 0) {
                             color = addVec3(color, scaleVec3(color, rim));
                         } else {
-                            color = addVec3(color, scaleVec3(COLOR_DIFFUSE, AMBIENT));
+                            // Skip diffuse color on textured entities
+                            if (texId < 0) color = addVec3(color, scaleVec3(COLOR_DIFFUSE, AMBIENT));
                             color = addVec3(color, scaleVec3(diffuse, DIFFUSE));
                             color = addVec3(color, scaleVec3(specular, SPECULAR));
                         }
@@ -347,7 +351,7 @@ export default class Renderer {
                     }
 
                     // Add the current color (and previous colors) to the "discovered" color.
-                    // color = scaleVec3(color, OPACITY * translucency);
+                    color = scaleVec3(color, OPACITY * translucency);
 
                     // Move the "hit" vector forward to the hit location.
                     lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (1 + EPSILON)));
