@@ -1,9 +1,9 @@
 import Texture from '../texture';
 import * as convert from 'color-convert';
 
-const MAX_ITER = 500;
-const WIDTH = 100;
-const HEIGHT = 80;
+const MAX_ITER = 1000;
+const WIDTH = 400;
+const HEIGHT = 160;
 
 export default class MandelbrotTexture extends Texture {
     constructor(

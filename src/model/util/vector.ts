@@ -63,6 +63,10 @@ export function toVec3(a : number[]) {
     return [ a[0], a[1], a[2] ];
 }
 
+export function reflect(incoming : Vector3, normal : Vector3) : Vector3 {
+    return normalizeVec3(subVec3(incoming, scaleVec3(normal, dotVec3(incoming, normal) * 2)));
+}
+
 export const vectorFunctions = [
     {
         source: addVec3,
@@ -117,6 +121,13 @@ export const vectorFunctions = [
         source: multiplyVec3,
         settings: {
             argumentTypes: { a: 'Array(3)', b: 'Array(3)' },
+            returnType: 'Array(3)',
+        },
+    },
+    {
+        source: reflect,
+        settings: {
+            argumentTypes: { incoming: 'Array(3)', normal: 'Array(3)' },
             returnType: 'Array(3)',
         },
     },

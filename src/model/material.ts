@@ -4,12 +4,14 @@ export default class Material {
     constructor(
         public diffuseColor  : Color = [ 0, 0, 0 ], // Basic Color
         public specularColor : Color = [ 1, 1, 1 ], // Specular Highlight Color
-        public ambient  : number = 0.75, // kA
-        public diffuse  : number = 0.5, // kD
-        public specular : number = 0.5, // kS
-        public exponent : number = 5, // kE
-        public opacity  : number = 1.0, // Opacity
-        public toon     : number = 0,
+        public ambient       : number = 0.75, // kA
+        public diffuse       : number = 0.5, // kD
+        public specular      : number = 0.5, // kS
+        public exponent      : number = 5, // kE
+        public opacity       : number = 1.0, // Opacity
+        public toon          : number = 0,
+        public reflection    : number = 0,
+        public transmission  : number = 0,
     ) {
         if (diffuse + specular > 1) {
             throw new Error('ERROR: Diffuse (kD) + Specular (kS) cannot exceed 1.0!');
@@ -56,6 +58,16 @@ export default class Material {
         return this;
     }
 
+    public setReflection(value : number) : Material {
+        this.reflection = value;
+        return this;
+    }
+
+    public setTransmission(value : number) : Material {
+        this.transmission = value;
+        return this;
+    }
+
     public toArray() : number[] {
         return [
             ...this.diffuseColor,
@@ -66,6 +78,8 @@ export default class Material {
             this.exponent,
             this.opacity,
             this.toon,
+            this.reflection,
+            this.transmission,
         ];
     }
 }

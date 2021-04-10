@@ -32,19 +32,24 @@ const world = new World();
 const sphere1 = new Sphere(
     [-0.25, 2.5, 4],
     1.4,
-    new Material([0, 0, 0.6]),
+    new Material([0, 0, 0.6])
+        .setReflection(0),
 );
 const sphere2 = new Sphere(
     [1.25, 1.5, 6.25],
     1.2,
-    new Material([0.3, 0.3, 0.3])
+    new Material([0.5, 0.5, 0.5])
         .setExponent(40)
         .setDiffuse(0.5)
-        .setSpecular(0.5),
+        .setSpecular(0.5)
+        .setReflection(1),
 );
 const grid = new Plane(
     [0, -1, 0],
-    new Material([0, 0, 0]).setSpecular(0.9).setDiffuse(0.1).setExponent(50),
+    new Material([0, 0, 0])
+        .setSpecular(0.9)
+        .setDiffuse(0.1)
+        .setExponent(50),
 );
 const ground1 = new Triangle(
     [
@@ -53,7 +58,8 @@ const ground1 = new Triangle(
         [5, -0.1, -2],
     ],
     [0, 1, 0],
-    new Material([0.420, 0, 0]),
+    new Material([0.420, 0, 0])
+        .setReflection(0),
 );
 const ground2 = new Triangle(
     [
@@ -62,7 +68,8 @@ const ground2 = new Triangle(
         [5, -0.1, -2],
     ],
     [0, 1, 0],
-    new Material([0.420, 0, 0]),
+    new Material([0.420, 0, 0])
+        .setReflection(0),
 );
 const pyramid1 = new Triangle(
     [
@@ -127,8 +134,8 @@ const camera = new Camera(
 );
 
 const chkr = new Checkerboard([1, 0, 0], [1, 1, 0], 1, 2, 150);
-ground1.textureId = 1; // Set ground1 to checker texture
-ground2.textureId = 1; // Set ground2 to checker texture
+ground1.textureId = 0; // Set ground1 to checker texture
+ground2.textureId = 0; // Set ground2 to checker texture
 
 // Image Texture
 // const img = <HTMLImageElement> document.getElementById('example-texture');
@@ -141,7 +148,7 @@ ground2.textureId = 1; // Set ground2 to checker texture
 // const imgTex = new ImageTexture(imageData);
 
 // Mandelbrot Texture
-const mandelbrotTex = new MandelbrotTexture(16);
+// const mandelbrotTex = new MandelbrotTexture(16);
 
 // TODO: Make this faster
 const bunnyMesh = await ModelLoader.loadModel('/bunny.obj');
@@ -174,7 +181,7 @@ world.addCameras(
 );
 
 world.addTextures(
-    mandelbrotTex,
+    // mandelbrotTex,
     chkr,
 );
 
