@@ -8,7 +8,7 @@ import { triangleIntersect, triangleNormal, trianglePoint } from '../model/entit
 import { voxelIntersect, voxelNormal, voxelPoint } from '../model/entities/voxel';
 import Bounds from '../model/util/bounds';
 import { smoothStepVal } from '../model/util/math';
-import { addVec3, Color, crossVec3, dotVec3, multiplyVec3, normalizeVec3, reflect, scaleVec3, subVec3, Vector2, Vector3 } from '../model/util/vector';
+import { addVec3, Color, crossVec3, dotVec3, multiplyVec3, normalizeVec3, reflect, scaleVec3, subVec3, transmit, Vector2, Vector3 } from '../model/util/vector';
 
 export default class Renderer {
     public static readonly DEFAULT_RESOLUTION = new Bounds(1920, 1080);
@@ -87,7 +87,7 @@ export default class Renderer {
             // Constants
             const MAX_INT   : number = 0xFFFFFFFF;
             const EPSILON   : number = 0.001;
-            const MAX_DEPTH : number = 3;
+            const MAX_DEPTH : number = 6;
 
             // NOTE:
             //   Need to re-declare Vector3 inputs as Array(3)
@@ -119,7 +119,7 @@ export default class Renderer {
             const E_TEX_Y : number = BASE += 1;  // Entity Texture
             const E_POS   : number = BASE += 1;  // Entity Position
             const E_MAT   : number = BASE += 3;  // Entity Material (Color)
-            const E_CUST  : number = BASE += 14; // Entity Custom Property Begin Index
+            const E_CUST  : number = BASE += 13; // Entity Custom Property Begin Index
 
             // Result Variables
             let color         : Color    = [ 0, 0, 0 ];     // Accumulated Color
@@ -130,7 +130,7 @@ export default class Renderer {
             let lastHitDir    : Vector3  = normalizeVec3(addVec3(addVec3(n, pX), pY));
 
             // Iterate until the accumulated opacity
-            while (depth < MAX_DEPTH && accReflect < 1.0) {
+            while (depth < MAX_DEPTH) {
                 const rayPos : Vector3 = lastHitPos;
                 const rayDir : Vector3 = lastHitDir;
                 let nearestEntityType     : number  = -1;
@@ -217,7 +217,6 @@ export default class Renderer {
                 let DIFFUSE        : number = -1;
                 let SPECULAR       : number = -1;
                 let EXPONENT       : number = -1;
-                let OPACITY        : number = -1;
                 let USE_TOON       : number = 0;
                 let REFLECTION     : number = 0;
                 let TRANSMISSION   : number = 0;
@@ -228,10 +227,9 @@ export default class Renderer {
                 DIFFUSE        = entities[nearestEntityIndex][E_MAT + 7];
                 SPECULAR       = entities[nearestEntityIndex][E_MAT + 8];
                 EXPONENT       = entities[nearestEntityIndex][E_MAT + 9];
-                OPACITY        = entities[nearestEntityIndex][E_MAT + 10];
-                USE_TOON       = entities[nearestEntityIndex][E_MAT + 11];
-                REFLECTION     = entities[nearestEntityIndex][E_MAT + 12];
-                TRANSMISSION   = entities[nearestEntityIndex][E_MAT + 13];
+                USE_TOON       = entities[nearestEntityIndex][E_MAT + 10];
+                REFLECTION     = entities[nearestEntityIndex][E_MAT + 11];
+                TRANSMISSION   = entities[nearestEntityIndex][E_MAT + 12];
 
                 // Amount of "opacity" left
                 const translucency : number = 1 - accOpacity;
@@ -239,7 +237,8 @@ export default class Renderer {
                 // We have not hit any entities (this cycle)
                 if (nearestEntityDistance === MAX_INT) {
                     // Add the Background color for the remaining opacity
-                    color = addVec3(color, BG_COLOR);
+                    color = addVec3(color, scaleVec3(BG_COLOR, translucency));
+                    break;
                 } else {
                     let diffuse   : Vector3 = [ 0, 0, 0 ];
                     let specular  : Vector3 = [ 0, 0, 0 ];
@@ -277,7 +276,8 @@ export default class Renderer {
                             const rayDir : Vector3 = lightDir;
                             const rayPos : Vector3 = addVec3(nearestEntityPoint, scaleVec3(lightDir, 0.001));
 
-                            let nearestEntityDistance : number  = MAX_INT;
+                            let nearestEntityDistance     : number  = MAX_INT;
+                            let nearestEntityTransmission : number  = 0;
                             /* @ts-ignore */
                             for (let i = 0; i < this.constants.ENTITY_COUNT; i++) {
                                 // Entity Information
@@ -324,6 +324,7 @@ export default class Renderer {
                                 //  (if any)
                                 if (distance > 0 && distance < nearestEntityDistance) {
                                     nearestEntityDistance = distance;
+                                    nearestEntityTransmission = entities[i][E_MAT+12];
                                 }
                             }
                             const VD = normalizeVec3(subVec3(nearestEntityPoint, eye));
@@ -339,7 +340,11 @@ export default class Renderer {
                                     specular = addVec3(specular, multiplyVec3(lightColor, scaleVec3(COLOR_SPECULAR, Math.max(0, dotVec3(VD, refl)) ** EXPONENT)));
                                 }
                             } else {
-                                color = scaleVec3(color, 0.5);
+                                if (nearestEntityTransmission <= 0) {
+                                    color = scaleVec3(color, 0.5);
+                                } else {
+                                    // color = scaleVec3(color, 1-nearestEntityTransmission);
+                                }
                             }
                             if (USE_TOON === 1) {
                                 rim = smoothStepVal(0.706, 0.726, 1-dotVec3(VD, normal));
@@ -360,21 +365,33 @@ export default class Renderer {
                     }
                 }
 
-                // Add the current color (and previous colors) to the "discovered" color.
-                // color = scaleVec3(color, OPACITY * translucency);
+                color = scaleVec3(color, translucency);
+
                 if (REFLECTION > 0) {
                     color = addVec3(color, scaleVec3(color, 1-REFLECTION));
+
+                    // Set the "hit" direction to the reflection vector based on the hit location.
+                    lastHitDir = reflect(lastHitDir, nearestEntityNormal);
+
+                    // Move the "hit" vector forward to the hit location.
+                    lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (0.5)));
+                } else if (TRANSMISSION > 0) {
+                    // Move the "hit" vector forward to the hit location.
+                    lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (1.001)));
+
+                    if (depth > 0) {
+                        lastHitDir = transmit(lastHitDir, subVec3(nearestEntityNormal, scaleVec3(nearestEntityNormal, 2)), 1, 1.25);
+                    }
+                } else {
+                    break;
                 }
 
-                // Move the "hit" vector forward to the hit location.
-                lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (1 - 0.5)));
-
-                // Set the "hit" direction to the reflection vector based on the hit location.
-                lastHitDir = reflect(lastHitDir, nearestEntityNormal);
-
                 // Increase the amount of accumulated opacity hit
-                accOpacity += ((translucency) * OPACITY);
+                accOpacity += ((translucency) * TRANSMISSION);
+
+                // Increase the amount of accumulated reflection
                 accReflect += 1-REFLECTION;
+
                 depth += 1;
             }
 

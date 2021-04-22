@@ -67,6 +67,12 @@ export function reflect(incoming : Vector3, normal : Vector3) : Vector3 {
     return normalizeVec3(subVec3(incoming, scaleVec3(normal, dotVec3(incoming, normal) * 2)));
 }
 
+export function transmit(incoming : Vector3, normal : Vector3, ni : number, nt : number) : Vector3 {
+    const t1 = scaleVec3(subVec3(incoming, scaleVec3(normal, dotVec3(incoming, normal))), (ni/nt));
+    const t2 = 1-((Math.pow(ni, 2)*(1-Math.pow(dotVec3(incoming, normal), 2))/Math.pow(nt, 2)));
+    return addVec3(t1, scaleVec3(normal, Math.sqrt(t2)));
+}
+
 export const vectorFunctions = [
     {
         source: addVec3,
@@ -128,6 +134,13 @@ export const vectorFunctions = [
         source: reflect,
         settings: {
             argumentTypes: { incoming: 'Array(3)', normal: 'Array(3)' },
+            returnType: 'Array(3)',
+        },
+    },
+    {
+        source: transmit,
+        settings: {
+            argumentTypes: { incoming: 'Array(3)', normal: 'Array(3)', ni: 'Number', nt: 'Number' },
             returnType: 'Array(3)',
         },
     },

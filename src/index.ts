@@ -32,8 +32,8 @@ const world = new World();
 const sphere1 = new Sphere(
     [-0.25, 2.5, 4],
     1.4,
-    new Material([0, 0, 0.6])
-        .setReflection(0),
+    new Material([0.1, 0.1, 0.1])
+        .setTransmission(0.2),
 );
 const sphere2 = new Sphere(
     [1.25, 1.5, 6.25],
@@ -42,7 +42,7 @@ const sphere2 = new Sphere(
         .setExponent(40)
         .setDiffuse(0.5)
         .setSpecular(0.5)
-        .setReflection(1),
+        .setReflection(0.5),
 );
 const grid = new Plane(
     [0, -1, 0],

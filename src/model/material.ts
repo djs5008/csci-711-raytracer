@@ -8,7 +8,6 @@ export default class Material {
         public diffuse       : number = 0.5, // kD
         public specular      : number = 0.5, // kS
         public exponent      : number = 5, // kE
-        public opacity       : number = 1.0, // Opacity
         public toon          : number = 0,
         public reflection    : number = 0,
         public transmission  : number = 0,
@@ -48,11 +47,6 @@ export default class Material {
         return this;
     }
 
-    public setOpacity(value : number) : Material {
-        this.opacity = value;
-        return this;
-    }
-
     public setToon(bool : boolean) : Material {
         this.toon = Number(bool);
         return this;
@@ -76,7 +70,6 @@ export default class Material {
             this.diffuse,
             this.specular,
             this.exponent,
-            this.opacity,
             this.toon,
             this.reflection,
             this.transmission,
