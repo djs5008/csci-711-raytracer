@@ -9,14 +9,18 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     overscroll-behavior: none;
     overflow: hidden;
+    background: #333;
+    color: white;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 canvas {
     background-color: transparent;
-    max-width: 768px;
-    max-height: 432px;
+    max-width: 960px;
+    max-height: 540px;
     width: 90vw;
     height: calc(90vw * (9 / 16));
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }
 
 .controls {
@@ -49,4 +53,19 @@ canvas {
     color: white;
     opacity: 0.25;
     font-size: 10px;
+}
+
+#mute-toggle {
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    z-index: 1;
+    user-select: none;
+    cursor: pointer;
+    font-size: 24pt;
+}
+
+#mute-toggle:not(.muted) {
+    filter: grayscale();
+    opacity: 0.75;
 }

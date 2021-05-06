@@ -87,7 +87,7 @@ export default class Renderer {
             // Constants
             const MAX_INT   : number = 0xFFFFFFFF;
             const EPSILON   : number = 0.001;
-            const MAX_DEPTH : number = 6;
+            const MAX_DEPTH : number = 2;
 
             // NOTE:
             //   Need to re-declare Vector3 inputs as Array(3)
@@ -109,7 +109,7 @@ export default class Renderer {
             const pY : Vector3 = scaleVec3(v, ((0 + (y / h) - 0.5) * yScale) * focalLen);
 
             // Background Color
-            const BG_COLOR : Vector3 = [0.25, 0.6, 1];
+            const BG_COLOR : Vector3 = [0.075, 0.075, 0.075];
 
             // Define the indexes of physical entity properties
             let   BASE    : number = 0;
@@ -133,6 +133,7 @@ export default class Renderer {
             while (depth < MAX_DEPTH) {
                 const rayPos : Vector3 = lastHitPos;
                 const rayDir : Vector3 = lastHitDir;
+                let hitColor              : Vector3 = [ 0, 0, 0 ];
                 let nearestEntityType     : number  = -1;
                 let nearestEntityIndex    : number  = -1;
                 let nearestEntityDistance : number  = MAX_INT;
@@ -259,7 +260,7 @@ export default class Renderer {
                             const tX = Math.floor(Math.abs((pX % tWidth)  / texScale));
                             const tY = Math.floor(Math.abs((pZ % tHeight) / texScale));
                             const colorIndex = ((tX + (tY * (tWidth/texScale))) * 3) + HEADER_LENGTH;
-                            color = addVec3(color, [
+                            hitColor = addVec3(hitColor, [
                                 textures[texId][colorIndex + 0],
                                 textures[texId][colorIndex + 1],
                                 textures[texId][colorIndex + 2],
@@ -340,47 +341,48 @@ export default class Renderer {
                                     specular = addVec3(specular, multiplyVec3(lightColor, scaleVec3(COLOR_SPECULAR, Math.max(0, dotVec3(VD, refl)) ** EXPONENT)));
                                 }
                             } else {
-                                if (nearestEntityTransmission <= 0) {
-                                    color = scaleVec3(color, 0.5);
-                                } else {
-                                    // color = scaleVec3(color, 1-nearestEntityTransmission);
-                                }
+                                // hitColor = subVec3(color, [ 1/(nearestEntityDistance**2), 1/(nearestEntityDistance**2), 1/(nearestEntityDistance**2)]);
                             }
                             if (USE_TOON === 1) {
                                 rim = smoothStepVal(0.706, 0.726, 1-dotVec3(VD, normal));
                             }
                         }
                         if (USE_TOON === 1 && rim > 0) {
-                            color = addVec3(color, scaleVec3(color, rim));
+                            hitColor = addVec3(hitColor, scaleVec3(hitColor, rim));
                         } else {
                             // Skip diffuse color on textured entities
-                            if (texId < 0) color = addVec3(color, scaleVec3(COLOR_DIFFUSE, AMBIENT));
-                            color = addVec3(color, scaleVec3(diffuse, DIFFUSE));
-                            color = addVec3(color, scaleVec3(specular, SPECULAR));
+                            if (texId < 0) hitColor = addVec3(hitColor, scaleVec3(COLOR_DIFFUSE, AMBIENT));
+                            hitColor = addVec3(hitColor, scaleVec3(diffuse, DIFFUSE));
+                            hitColor = addVec3(hitColor, scaleVec3(specular, SPECULAR));
                         }
                     } else {
                         if (depth == 0) {
-                            color = COLOR_DIFFUSE;
+                            hitColor = COLOR_DIFFUSE;
                         }
                     }
                 }
 
-                color = scaleVec3(color, translucency);
+                if (translucency > 0) {
+                    hitColor = scaleVec3(hitColor, translucency);
+                }
+
+                // if (accReflect > 0) {
+                //     hitColor = addVec3(hitColor, scaleVec3(hitColor, accReflect));
+                // }
+
+                // sprinkle in some reflection
+                color = addVec3(color, scaleVec3(scaleVec3(hitColor, 1-REFLECTION), (1-accReflect)));
 
                 if (REFLECTION > 0) {
-                    color = addVec3(color, scaleVec3(color, 1-REFLECTION));
-
                     // Set the "hit" direction to the reflection vector based on the hit location.
-                    lastHitDir = reflect(lastHitDir, nearestEntityNormal);
-
+                    lastHitDir = reflect(rayDir, nearestEntityNormal);
                     // Move the "hit" vector forward to the hit location.
-                    lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (0.5)));
+                    lastHitPos = addVec3(rayPos, scaleVec3(rayDir, nearestEntityDistance));
                 } else if (TRANSMISSION > 0) {
                     // Move the "hit" vector forward to the hit location.
-                    lastHitPos = addVec3(lastHitPos, scaleVec3(rayDir, nearestEntityDistance * (1.001)));
-
+                    lastHitPos = addVec3(rayPos, scaleVec3(rayDir, nearestEntityDistance * (1.001)));
                     if (depth > 0) {
-                        lastHitDir = transmit(lastHitDir, subVec3(nearestEntityNormal, scaleVec3(nearestEntityNormal, 2)), 1, 1.25);
+                        lastHitDir = transmit(rayDir, subVec3(nearestEntityNormal, scaleVec3(nearestEntityNormal, 2)), 1, 1.25);
                     }
                 } else {
                     break;
@@ -392,6 +394,7 @@ export default class Renderer {
                 // Increase the amount of accumulated reflection
                 accReflect += 1-REFLECTION;
 
+                // Increase "recursion" depth
                 depth += 1;
             }
 

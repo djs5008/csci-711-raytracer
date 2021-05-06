@@ -64,7 +64,7 @@ export function toVec3(a : number[]) {
 }
 
 export function reflect(incoming : Vector3, normal : Vector3) : Vector3 {
-    return normalizeVec3(subVec3(incoming, scaleVec3(normal, dotVec3(incoming, normal) * 2)));
+    return subVec3(incoming, scaleVec3(normal, dotVec3(incoming, normal) * 2));
 }
 
 export function transmit(incoming : Vector3, normal : Vector3, ni : number, nt : number) : Vector3 {

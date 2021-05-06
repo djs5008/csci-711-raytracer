@@ -26,7 +26,7 @@ export default class World {
             ...this.lights,
             ...lights,
         ];
-        this.addEntities(...lights);
+        // this.addEntities(...lights);
     }
 
     public addCameras(...cameras : Array<Camera>) {
