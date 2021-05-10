@@ -376,7 +376,7 @@ export default class Renderer {
                     // Set the "hit" direction to the reflection vector based on the hit location.
                     lastHitDir = reflect(rayDir, nearestEntityNormal);
                     // Move the "hit" vector forward to the hit location.
-                    lastHitPos = addVec3(rayPos, scaleVec3(rayDir, nearestEntityDistance));
+                    lastHitPos = addVec3(rayPos, scaleVec3(rayDir, nearestEntityDistance * 1.001));
                 } else if (TRANSMISSION > 0) {
                     // Move the "hit" vector forward to the hit location.
                     lastHitPos = addVec3(rayPos, scaleVec3(rayDir, nearestEntityDistance * (1.001)));
