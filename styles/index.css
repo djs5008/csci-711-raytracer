@@ -71,6 +71,8 @@ canvas {
 }
 
 .options-section {
+    display: flex;
+    flex-direction: column;
     position: relative;
     background: #444;
     border-radius: 5px;

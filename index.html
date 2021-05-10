@@ -14,8 +14,14 @@
         <div class="info">
             <div class="options-section">
                 <h3 class="title">Settings</h3>
-                <input type="checkbox" id="reflection" checked onchange="handleReflectionChange(event)" />
-                <label for="reflection">Reflection</label>
+                <div>
+                    <input type="checkbox" id="c-reflection" checked onchange="handleCubeReflectionChange(event)" />
+                    <label for="c-reflection">Cube Reflection</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="f-reflection" onchange="handleFloorReflectionChange(event)" />
+                    <label for="f-reflection">Floor Reflection</label>
+                </div>
             </div>
         </div>
     </body>

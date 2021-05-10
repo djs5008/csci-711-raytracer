@@ -9,23 +9,18 @@ import KernelManager from './app/kernel-manager';
 import { Vector3 } from './model/util/vector';
 import Material from './model/material';
 import Light from './model/light';
-import Checkerboard from './model/textures/checkerboard';
 import AudioManager from './app/audio-manager';
 import Voxel from './model/entities/voxel';
 import { toRadian } from './model/util/math';
 import Plane from './model/entities/plane';
 import * as convert from 'color-convert';
+import Checkerboard from './model/textures/checkerboard';
 
 const audioManager = new AudioManager();
 const inputManager = new InputManager();
 const gpu = new GPU();
 const kernelManager = new KernelManager(gpu);
 const renderer = new Renderer();
-
-(<any> window).handleReflectionChange = (event : any) => {
-    const checked = event.currentTarget.checked;
-    renderer.getCamera().reflect = checked;
-};
 
 (<any> window).toggleMute = () => {
     audioManager.toggleMute();
@@ -53,7 +48,11 @@ const camera = new Camera(
     -30,
 );
 
-const chkr = new Checkerboard([1, 0, 0], [1, 1, 0], 1, 2, 150);
+const floor = new Plane([ 0, 1, 0 ], new Material([ 0.1, 0.1, 0.1 ]).setExponent(0.1).setDiffuse(-10).setSpecular(0));
+
+(<any> window).handleFloorReflectionChange = (event : any) => {
+    floor.material.setReflection((event.currentTarget.checked) ? 0.5 : 0);
+};
 
 const cubes : Array<Voxel> = [];
 const radius = 10;
@@ -72,11 +71,18 @@ for (let a = 0; a < 360; a += 20) {
     cubes.push(cube);
 }
 
+(<any> window).handleCubeReflectionChange = (event : any) => {
+    const checked = event.currentTarget.checked;
+    cubes.forEach((cube) => cube.material.setReflection((checked) ? 0.25 : 0));
+};
+
 // Add entities to world
 world.addEntities(
-    new Plane([ 0, 1, 0 ], new Material([ 0.1, 0.1, 0.1 ]).setExponent(0.1).setDiffuse(-10).setSpecular(0)),
+    floor,
     ...cubes,
 );
+
+const chkr = new Checkerboard([1, 0, 0], [1, 1, 0], 1, 2, 150);
 
 world.addLights(light1);
 world.addCameras(camera);
@@ -99,7 +105,6 @@ const draw = () => {
             const sum = audioManager.barHeights.slice(i*interval, (i+1)*interval).reduce((acc, cur) => acc+cur, 0);
             cube.height = Math.max(1, sum/interval);
             cube.position[1] = cube.height/2;
-            // console.log((cube.height/25)*360);
             const color = convert.hsl.rgb([ Math.floor((cube.height/25)*360), 100, 50 ]);
             cube.material = cube.material.setDiffuseColor([ color[0]/255, color[1]/255, color[2]/255]);
         }
