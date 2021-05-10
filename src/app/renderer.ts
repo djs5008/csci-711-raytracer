@@ -75,7 +75,6 @@ export default class Renderer {
             eyepointWorld : Vector3,
             entities      : any[][],
             lights        : any[][],
-            meshes        : any,
             textures      : any,
             N             : Vector3,
             U             : Vector3,

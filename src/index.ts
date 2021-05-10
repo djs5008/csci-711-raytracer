@@ -9,7 +9,6 @@ import KernelManager from './app/kernel-manager';
 import { Vector3 } from './model/util/vector';
 import Material from './model/material';
 import Light from './model/light';
-import ModelLoader from './app/model-loader';
 import Checkerboard from './model/textures/checkerboard';
 import AudioManager from './app/audio-manager';
 import Voxel from './model/entities/voxel';
@@ -40,19 +39,16 @@ const light1 = new Light(
 const camera = new Camera(
     world,
     renderer.resolution, // Viewport
-    [0, 2.3, -1], // Position
+    [0, 7, -20], // Position
     [0, 0, -1], // Lookat
     Vector3.UP,
     90,
     2,
     90,
-    -20,
+    -30,
 );
 
 const chkr = new Checkerboard([1, 0, 0], [1, 1, 0], 1, 2, 150);
-
-// TODO: Make this faster
-const bunnyMesh = await ModelLoader.loadModel('/bunny.obj');
 
 const cubes : Array<Voxel> = [];
 const radius = 10;
@@ -77,7 +73,6 @@ world.addEntities(
     ...cubes,
 );
 
-world.addMesh(bunnyMesh);
 world.addLights(light1);
 world.addCameras(camera);
 world.addTextures(chkr);
@@ -92,20 +87,18 @@ document.getElementById('draw-container').appendChild(gpuKernel.canvas);
 // Render from Camera
 const draw = () => {
     window.requestAnimationFrame(() => {
-        if (inputManager.hasPointerLock()) {
-            audioManager.updateBarHeights();
-            const interval = (audioManager.barHeights.length/8) / cubes.length;
-            for (let i = 0; i < cubes.length; i++) {
-                const cube = cubes[i];
-                const sum = audioManager.barHeights.slice(i*interval, (i+1)*interval).reduce((acc, cur) => acc+cur, 0);
-                cube.height = Math.max(1, sum/interval);
-                cube.position[1] = cube.height/2;
-                // console.log((cube.height/25)*360);
-                const color = convert.hsl.rgb([ Math.floor((cube.height/25)*360), 100, 50 ]);
-                cube.material = cube.material.setDiffuseColor([ color[0]/255, color[1]/255, color[2]/255]);
-            }
-            renderer.drawImage();
+        audioManager.updateBarHeights();
+        const interval = (audioManager.barHeights.length/4) / cubes.length;
+        for (let i = 0; i < cubes.length; i++) {
+            const cube = cubes[i];
+            const sum = audioManager.barHeights.slice(i*interval, (i+1)*interval).reduce((acc, cur) => acc+cur, 0);
+            cube.height = Math.max(1, sum/interval);
+            cube.position[1] = cube.height/2;
+            // console.log((cube.height/25)*360);
+            const color = convert.hsl.rgb([ Math.floor((cube.height/25)*360), 100, 50 ]);
+            cube.material = cube.material.setDiffuseColor([ color[0]/255, color[1]/255, color[2]/255]);
         }
+        renderer.drawImage();
         draw();
     });
 };

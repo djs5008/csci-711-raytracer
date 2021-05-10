@@ -1,5 +1,4 @@
 import Camera from './camera';
-import Mesh from './entities/mesh';
 import Entity from './entity';
 import PhysicalEntity from './interfaces/physical-entity';
 import Light from './light';
@@ -10,7 +9,6 @@ export default class World {
     public cameras      : Array<Camera>  = [];
     public entities     : Array<Entity>  = [];
     public lights       : Array<Light>   = [];
-    public meshes       : Array<Mesh>    = [];
     public textures     : Array<Texture> = [];
     public ambientLight : Color;
 
@@ -36,14 +34,6 @@ export default class World {
         ];
     }
 
-    public addMesh(...meshes : Array<Mesh>) {
-        let index = this.meshes.length;
-        for (const mesh of meshes) {
-            mesh.id = index++;
-            this.meshes.push(mesh);
-        }
-    }
-
     public addTextures(...textures : Array<Texture>) {
         this.textures = [
             ...this.textures,
@@ -66,10 +56,6 @@ export default class World {
             result.push([ ...light.serialize() ]);
         }
         return result;
-    }
-
-    public getMeshes() : any {
-        return this.meshes;
     }
 
     public getTextures() : any {
