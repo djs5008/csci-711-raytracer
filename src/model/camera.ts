@@ -18,6 +18,7 @@ interface ISceneProperties {
     aspectRatio : number;
     fovScale : number;
     focalLen : number;
+    reflect  : boolean;
 }
 
 class Camera extends Entity {
@@ -31,6 +32,8 @@ class Camera extends Entity {
     private entities : number[][];
     private lights   : number[][];
     public  textures : number[][];
+
+    public reflect : boolean;
 
     constructor(
         public world : World,
@@ -75,6 +78,7 @@ class Camera extends Entity {
             aspectRatio,
             fovScale,
             focalLen,
+            reflect: this.reflect,
         };
     }
 
@@ -91,6 +95,7 @@ class Camera extends Entity {
             aspectRatio,
             fovScale,
             focalLen,
+            reflect,
         } = this.sceneProperties;
         this.gpuKernel(
             viewport,
@@ -103,6 +108,7 @@ class Camera extends Entity {
             aspectRatio,
             fovScale,
             focalLen,
+            Number(reflect),
         );
     }
 

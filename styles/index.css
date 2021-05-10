@@ -69,3 +69,19 @@ canvas {
     filter: grayscale();
     opacity: 0.75;
 }
+
+.options-section {
+    position: relative;
+    background: #444;
+    border-radius: 5px;
+    width: 25rem;
+    margin-top: 1rem;
+    padding: 8px;
+}
+
+.title {
+    width: 100%;
+    text-align: center;
+    color: #888;
+    margin: 0;
+}

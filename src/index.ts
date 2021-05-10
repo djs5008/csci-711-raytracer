@@ -22,6 +22,11 @@ const gpu = new GPU();
 const kernelManager = new KernelManager(gpu);
 const renderer = new Renderer();
 
+(<any> window).handleReflectionChange = (event : any) => {
+    const checked = event.currentTarget.checked;
+    renderer.getCamera().reflect = checked;
+};
+
 (<any> window).toggleMute = () => {
     audioManager.toggleMute();
     document.getElementById('mute-toggle').classList.toggle('muted', audioManager.muted);

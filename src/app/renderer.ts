@@ -14,6 +14,7 @@ export default class Renderer {
     public static readonly DEFAULT_RESOLUTION = new Bounds(1920, 1080);
 
     public gpuKernel        : Kernel;
+    public reflect          : Boolean;
     private camera          : Camera;
     private lastFrameTime   : number;
     private frameCount      : number = 0;
@@ -82,6 +83,7 @@ export default class Renderer {
             aspectRatio   : number,
             fovScale      : number,
             focalLen      : number,
+            showReflection       : number,
         ) {
             // Constants
             const MAX_INT   : number = 0xFFFFFFFF;
@@ -372,7 +374,7 @@ export default class Renderer {
                 // sprinkle in some reflection
                 color = addVec3(color, scaleVec3(scaleVec3(hitColor, 1-REFLECTION), (1-accReflect)));
 
-                if (REFLECTION > 0) {
+                if (REFLECTION > 0 && showReflection != 0) {
                     // Set the "hit" direction to the reflection vector based on the hit location.
                     lastHitDir = reflect(rayDir, nearestEntityNormal);
                     // Move the "hit" vector forward to the hit location.
